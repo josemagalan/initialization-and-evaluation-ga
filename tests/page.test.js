@@ -42,3 +42,14 @@ test('cada id que usa app.js existe en la página', () => {
 test('el bloque de licencias y créditos está presente', () => {
   for (const f of ['LICENSE', 'LICENSE-CONTENT.md', 'vendor/d3-LICENSE', '.nojekyll']) assert.ok(fs.existsSync(path.join(ROOT, f)), f);
 });
+
+test('la vista pide las columnas de la rejilla con model.gridColumns, un nombre que ningún elemento usa para otra cosa', () => {
+  // Regresión: la vista llamaba a model.columns(step), pero varias estrategias de inicialización ya devolvían
+  // `columns` (los rótulos de su tabla de medidas) y sus páginas fallaban.
+  const view = fs.readFileSync(path.join(ROOT, 'js', 'viz', 'population-view.js'), 'utf8');
+  assert.doesNotMatch(view, /model\.columns\s*\(/);
+  for (const f of fs.readdirSync(path.join(ROOT, 'js', 'items'))) {
+    const src = fs.readFileSync(path.join(ROOT, 'js', 'items', f), 'utf8');
+    assert.doesNotMatch(src, /gridColumns/, `js/items/${f} usa el nombre reservado gridColumns`);
+  }
+});

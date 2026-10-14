@@ -166,7 +166,7 @@
       }
       cols.push({ key: 'fit', head: h.t('pvColFitness'), width: pen ? 74 : 84, at: 4, cell: (e) => ({ text: fo(h, enc, e.fitness), cls: e.violation ? 'infeasible' : '' }) });
       cols.push({ key: 'rank', head: h.t('pvColRank'), width: 58, rank: true, cell: (e, i) => ({ text: String(model.ranking.rank[i]), cls: model.ranking.rank[i] === 1 ? 'best' : '' }) });
-      model.columns = (step) => cols.map((col) => ({
+      model.gridColumns = (step) => cols.map((col) => ({
         head: col.head, width: col.width, shown: col.rank ? !!step.rank : true,
         cell: (i) => (col.rank ? (step.rank ? col.cell(model.evals[i], i) : null) : (seen(step, i, col.at) ? col.cell(model.evals[i], i) : null)),
       }));
@@ -300,7 +300,7 @@
       const enc = state.enc;
       model.transforms = G.items.objective.TRANSFORMS;
       const fmtF = (v) => (model.transform === 'rank' ? h.fmt(v) : model.transform === 'inv' ? h.fmtFixed(v, 4) : fo(h, enc, v));
-      model.columns = (step) => [
+      model.gridColumns = (step) => [
         { head: h.t(`pvQ_${enc}`), width: 78, shown: true, cell: (i) => ({ text: fo(h, enc, model.f[i]) }) },
         { head: h.t('pvColFitnessF'), width: 84, shown: (step.cols || 0) >= 2,
           cell: (i) => ((step.cols || 0) >= 2 && (step.type !== 'o_first' || i === 0) ? { text: fmtF(model.fitnessValues[i]), cls: model.fitnessValues[i] < 0 ? 'infeasible' : '' } : null) },
@@ -412,7 +412,7 @@
       const enc = state.enc;
       model.penaltyPanel = true;
       model.fitShown = (step, i) => (step.cols || 0) >= 3 && (step.only == null || i === step.only);
-      model.columns = (step) => [
+      model.gridColumns = (step) => [
         { head: h.t(`pvQ_${enc}`), width: 66, shown: true, cell: (i) => ({ text: fo(h, enc, model.evals[i].objective), cls: model.evals[i].violation ? 'muted' : '' }) },
         { head: h.t(enc === 'knapsack-bits' ? 'pvColExcess' : 'pvColViol'), width: 50, shown: (step.cols || 0) >= 2,
           cell: (i) => ((step.cols || 0) >= 2 ? { text: h.fmt(model.evals[i].violation), cls: model.evals[i].violation ? 'infeasible' : '' } : null) },
@@ -515,7 +515,7 @@
       const S = G.space;
       model.gens.forEach((g) => { g.quality = g.pop.map((x) => S.quality(enc, state.inst, x)); });
       // Columnas de la generación que se ve: la vista sustituye pop, evals y hit por los de model.gens[step.gen]
-      model.columns = (step) => {
+      model.gridColumns = (step) => {
         const g = step.gen != null ? model.gens[step.gen] : null;
         const on = (i) => g && step.done > i;
         return [

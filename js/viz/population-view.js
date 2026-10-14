@@ -18,7 +18,7 @@
  *   step.peek     individuo que el panel enseña aunque aún no esté evaluado (la cadena de evaluación)
  *   step.gen      generación que se ve (model.gens[gen]: pop, quality, hit), en la página del coste
  *   step.show     también 'roulette', 'shares', 'penalty', 'lambda' o 'cost' (paneles de la evaluación)
- * model.columns(step), si existe, da las columnas de la derecha de la rejilla:
+ * model.gridColumns(step), si existe, da las columnas de la derecha de la rejilla:
  *   [{ head, width, shown, cell(i) → { text, cls } | null }]; si no, una columna con el objetivo (model.quality).
  * model.rowClass(i, step), si existe, añade clases a la fila i.
  * Con poco ancho, el panel pasa debajo de la rejilla.
@@ -62,7 +62,7 @@
     }
     /** Columnas de la derecha: las del modelo o, si no tiene, la del objetivo. */
     function columnsOf(model, step) {
-      if (model.columns) return model.columns(step);
+      if (model.gridColumns) return model.gridColumns(step);
       return [{
         head: t(model.qualityLabel), width: QCOL, shown: true,
         cell: (i) => {
@@ -72,7 +72,7 @@
         },
       }];
     }
-    const colsWidth = (model) => (model.columns ? model.columns({}).reduce((a, c) => a + (c.width || QCOL), 0) : QCOL);
+    const colsWidth = (model) => (model.gridColumns ? model.gridColumns({}).reduce((a, c) => a + (c.width || QCOL), 0) : QCOL);
 
     function layout(model, width) {
       const sh = model.shape;
