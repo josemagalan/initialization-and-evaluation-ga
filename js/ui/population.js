@@ -3,7 +3,9 @@
  * población y de las semillas; narración de cada paso; tarjeta de medidas y estado en la URL.
  *
  * createPopulationUI(spec)(ctx) devuelve la interfaz que usa js/app.js:
- *   spec = { item, run(enc, inst, N, seed, opts) → resultado con steps, extraControls?(c, state, ctx), hashExtra?, readExtra? }
+ *   spec = { item, run(enc, inst, N, seed, opts) → resultado con steps, extraControls?(c, state, ctx), hashExtra?, readExtra?,
+ *            augment?(model, state, h) (columnas y datos de la vista), extra?(c, h) → { el, render(step) } (tarjeta propia
+ *            en lugar de la de diversidad), noCompare? (sin el enlace a la comparación de la inicialización) }
  *   ctx  = { content, t, fmt, fmtFixed, lang, controlsEl, extraEl, onChange(mode), stop }
  */
 (function (root) {
@@ -38,7 +40,7 @@
       const extraFields = spec.extraControls ? spec.extraControls(c, state, { changed, t }) : [];
       ctx.controlsEl.replaceChildren(
         c.row(encSel.field, nRange.field, mRange.field, fnSel.field, kRange.field, popRange.field, ...extraFields.map((f) => f.field || f)),
-        c.buttons(btnInst, btnPop, cmpLink),
+        spec.noCompare ? c.buttons(btnInst, btnPop) : c.buttons(btnInst, btnPop, cmpLink),
         seedsHint,
       );
 
@@ -84,6 +86,7 @@
           quality: r.pop.map((x) => S.quality(state.enc, inst, x)),
           qualityLabel: `pvQ_${state.enc}`,
         });
+        if (spec.augment) spec.augment(state.model, state, helpers());
         seedsHint.textContent = t('seedsHint', { s: state.s, ps: state.ps });
         updateCompareLink();
         return r;
@@ -203,12 +206,18 @@
             const f = (v) => (state.enc === 'tsp-perm' ? fmtFixed(v, 1) : state.enc.startsWith('function') ? fmtFixed(v, 2) : fmt(v));
             return { key: M.sense === 'max' ? 'quality_max' : 'quality_min', params: { best: f(M.best), mean: f(M.mean), worst: f(M.worst), opt: f(M.optimum) } };
           }
-          default: return spec.narrate ? spec.narrate(step, state, { t, fmt, fmtFixed, chromText, qualityText, expectedDist, pct, big, content: ctx.content, lang: ctx.lang }) : { key: step.type, params: {} };
+          default: return spec.narrate ? spec.narrate(step, state, helpers()) : { key: step.type, params: {} };
         }
+      }
+
+      /** Utilidades que reciben las funciones propias de cada página. */
+      function helpers() {
+        return { t, fmt, fmtFixed, chromText, qualityText, expectedDist, pct, big, content: ctx.content, lang: ctx.lang, c, state };
       }
 
       // ---------- Tarjeta de medidas ----------
 
+      const own = spec.extra ? spec.extra(c, helpers()) : null;
       const card = c.card('measuresTitle', 'measuresNote');
       const table = c.el('table', 'measures');
       const tableWrap = c.el('div', 'table-scroll');
@@ -216,9 +225,10 @@
       card.append(tableWrap);
       const pending = c.el('p', 'hint', { 'data-i18n': 'measuresPending' });
       card.append(pending);
-      ctx.extraEl.replaceChildren(card);
+      ctx.extraEl.replaceChildren(own ? own.el : card);
 
       function renderExtra(step) {
+        if (own) { own.render(step); return; }
         const m = state.model;
         const N = m.pop.length;
         const complete = step.done >= N && !step.onlySeed && !step.onlyRandom;

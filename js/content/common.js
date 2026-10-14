@@ -477,6 +477,29 @@
     },
   });
 
+  // Fase 3: evaluación (cotejar; ver la FTD)
+  Object.assign(refs, {
+    baker1985: {
+      id: 'baker-1985',
+      type: 'inproceedings',
+      authors: 'Baker, J. E.',
+      year: '1985',
+      title: 'Adaptive selection methods for genetic algorithms',
+      container: 'Proceedings of an International Conference on Genetic Algorithms and Their Applications',
+      details: { es: '(J. J. Grefenstette, ed., pp. 101–111). Lawrence Erlbaum', en: '(J. J. Grefenstette, Ed., pp. 101–111). Lawrence Erlbaum' },
+      url: null,
+    },
+    mitchell1998: {
+      id: 'mitchell-1998',
+      type: 'book',
+      authors: 'Mitchell, M.',
+      year: '1998',
+      title: 'An introduction to genetic algorithms',
+      details: { es: '(1.ª ed. en rústica; 1.ª ed., 1996). MIT Press', en: '(1st paperback ed.; 1st ed., 1996). MIT Press' },
+      url: null,
+    },
+  });
+
   /*
    * Formalización común de la función continua: filas cuyo MathML depende de la función elegida
    * (math(lang, fn)). Las codificaciones solo cambian la fila del espacio de búsqueda.

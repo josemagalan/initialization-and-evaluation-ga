@@ -13,6 +13,14 @@
  *   step.grid     'strata': rejilla de N × N estratos en el mapa de la función
  *   step.ghost    dibuja también la población uniforme de la misma semilla (model.uniformPop), en hueco
  *   step.hole     dibuja el mayor hueco de las dos poblaciones (model.measures.coverage)
+ *   step.allGenes los cromosomas de todos los individuos se ven desde el principio (evaluación): step.done dice
+ *                 entonces cuántos están evaluados (columnas y panel)
+ *   step.peek     individuo que el panel enseña aunque aún no esté evaluado (la cadena de evaluación)
+ *   step.gen      generación que se ve (model.gens[gen]: pop, quality, hit), en la página del coste
+ *   step.show     también 'roulette', 'shares', 'penalty', 'lambda' o 'cost' (paneles de la evaluación)
+ * model.columns(step), si existe, da las columnas de la derecha de la rejilla:
+ *   [{ head, width, shown, cell(i) → { text, cls } | null }]; si no, una columna con el objetivo (model.quality).
+ * model.rowClass(i, step), si existe, añade clases a la fila i.
  * Con poco ancho, el panel pasa debajo de la rejilla.
  */
 (function (root) {
@@ -33,7 +41,7 @@
     const Fn = root.GAX.func;
     const S = root.GAX.space;
 
-    svg.selectAll(':scope > g').remove();   // el <title> de la figura se conserva
+    svg.selectAll(':scope > g, :scope > defs').remove();   // el <title> de la figura se conserva
     const gGrid = svg.append('g').attr('class', 'pv-grid');
     const gPanel = svg.append('g').attr('class', 'pv-panel');
     let contours = { key: null, polys: null };
@@ -52,18 +60,33 @@
       if (sh.kind === 'bits' && sh.k) return g * (w + 2) + (g >= sh.k ? 10 : 0);
       return g * (w + 2);
     }
+    /** Columnas de la derecha: las del modelo o, si no tiene, la del objetivo. */
+    function columnsOf(model, step) {
+      if (model.columns) return model.columns(step);
+      return [{
+        head: t(model.qualityLabel), width: QCOL, shown: true,
+        cell: (i) => {
+          if (!visible(model, step, i)) return null;
+          const q = model.quality[i];
+          return { text: q.feasible ? fmt(q.objective) : t('pvInfeasible'), cls: q.feasible ? '' : 'infeasible' };
+        },
+      }];
+    }
+    const colsWidth = (model) => (model.columns ? model.columns({}).reduce((a, c) => a + (c.width || QCOL), 0) : QCOL);
+
     function layout(model, width) {
       const sh = model.shape;
       const cw = cellWidth(sh);
       const cells = cellX(sh, sh.length - 1) + cw;
-      const gridW = LABEL + cells + 12 + QCOL + (model.candidates ? 10 : 0);
+      const qcol = colsWidth(model);
+      const gridW = LABEL + cells + 12 + qcol + (model.candidates ? 10 : 0);
       const gridH = TOP + model.pop.length * ROW + (model.candidates ? ROW + 14 : 0);
       const side = width >= gridW + GAP + PANEL;
       const panelX = side ? gridW + GAP : Math.max(0, (Math.max(gridW, PANEL) - PANEL) / 2);
       const panelY = side ? 0 : gridH + 26;
       const W = side ? gridW + GAP + PANEL : Math.max(gridW, PANEL);
       const H = (side ? Math.max(gridH, TOP + PANEL + 20) : panelY + TOP + PANEL + 20) + 6;
-      return { sh, cw, cells, gridW, gridH, panelX, panelY, W, H };
+      return { sh, cw, cells, qcol, gridW, gridH, panelX, panelY, W, H };
     }
 
     // ---------- Qué individuos se ven ----------
@@ -75,7 +98,7 @@
       if (step.onlyRandom) return !isSeedRow(model, i) && i < step.done;
       return i < step.done;
     }
-    const shownIdx = (model, step) => d3.range(model.pop.length).filter((i) => visible(model, step, i));
+    const shownIdx = (model, step) => d3.range(model.pop.length).filter((i) => visible(model, step, i) || i === step.peek);
 
     // ---------- Rejilla ----------
 
@@ -86,8 +109,13 @@
       const N = model.pop.length;
       gGrid.selectAll('*').remove();
       gGrid.append('text').attr('class', 'pv-title').attr('x', 0).attr('y', 16).text(t('pvPopTitle', { N }));
-      gGrid.append('text').attr('class', 'pv-title pv-qtitle').attr('x', LABEL + L.cells + 12 + QCOL).attr('y', 16)
-        .attr('text-anchor', 'end').text(t(model.qualityLabel));
+      const cols = columnsOf(model, step);
+      let cx = LABEL + L.cells + 12;
+      const colX = cols.map((c) => { cx += c.width || QCOL; return cx; });
+      cols.forEach((c, k) => {
+        if (c.shown === false) return;
+        gGrid.append('text').attr('class', 'pv-title pv-qtitle').attr('x', colX[k]).attr('y', 16).attr('text-anchor', 'end').text(c.head);
+      });
       if (sh.kind === 'matrix') {
         for (let i = 0; i < sh.n; i++) {
           gGrid.append('text').attr('class', 'pv-sub').attr('text-anchor', 'middle')
@@ -112,10 +140,11 @@
       const d0 = first ? model.draws[0][first.draw] : null;
       for (let i = 0; i < N; i++) {
         const isSeed = isSeedRow(model, i);
-        const complete = visible(model, step, i);
+        const complete = visible(model, step, i) || (!!step.allGenes && !first && !partial);
         const building = (!!first || !!partial) && i === 0;
+        const extra = model.rowClass ? model.rowClass(i, step) : '';
         const row = gGrid.append('g')
-          .attr('class', `pv-row${i === step.ind ? ' current' : ''}${!complete && !building ? ' pending' : ''}${isSeed && complete ? ' seed' : ''}`)
+          .attr('class', `pv-row${i === step.ind ? ' current' : ''}${!complete && !building ? ' pending' : ''}${isSeed && complete ? ' seed' : ''}${extra ? ` ${extra}` : ''}`)
           .attr('transform', `translate(0,${TOP + i * ROW})`);
         if (isSeed && complete) row.append('rect').attr('class', 'pv-seedmark').attr('x', 2).attr('y', 4).attr('width', 5).attr('height', ROW - 8).attr('rx', 2);
         row.append('text').attr('class', 'pv-label').attr('x', LABEL - 10).attr('y', ROW / 2 + 5).attr('text-anchor', 'end').text(`I${i + 1}`);
@@ -150,11 +179,13 @@
           const x2 = LABEL + cellX(sh, d0.k - 1) + L.cw / 2;
           row.append('path').attr('class', 'pv-swap').attr('d', `M${x1},3 C${x1},-13 ${x2},-13 ${x2},3`);
         }
-        if (complete) {
-          const q = model.quality[i];
-          row.append('text').attr('class', `pv-q${q.feasible ? '' : ' infeasible'}`).attr('x', LABEL + L.cells + 12 + QCOL)
-            .attr('y', ROW / 2 + 5).attr('text-anchor', 'end').text(q.feasible ? fmt(q.objective) : t('pvInfeasible'));
-        }
+        cols.forEach((c, k) => {
+          if (c.shown === false) return;
+          const v = c.cell(i);
+          if (!v) return;
+          row.append('text').attr('class', `pv-q${v.cls ? ` ${v.cls}` : ''}`).attr('x', colX[k])
+            .attr('y', ROW / 2 + 5).attr('text-anchor', 'end').text(v.text);
+        });
       }
     }
 
@@ -409,13 +440,225 @@
         .attr('cx', (c) => sx(c.g)).attr('cy', (c) => sy(c.k)).attr('r', (c) => (c.g === step.gen ? 6 : 4));
     }
 
+    // ---------- Paneles de la evaluación ----------
+
+    /** ¿Se ve ya la aptitud del individuo i en este paso? (model.fitShown, si existe). */
+    const fitShown = (model, step, i) => (model.fitShown ? model.fitShown(step, i) : true);
+
+    /** Mochila: peso frente a valor y, para los infactibles, una flecha del valor a la aptitud penalizada. */
+    function drawPenaltyKnapsack(step, model, L) {
+      const inst = model.inst;
+      const g = panelFrame(L, 'pvPenKnapsackTitle');
+      const W = inst.weights.reduce((a, b) => a + b, 0);
+      const V = inst.values.reduce((a, b) => a + b, 0);
+      const lo = Math.min(0, ...model.evals.map((e) => e.fitness));
+      const x0 = 38;
+      const y1 = PANEL - 24;
+      const sx = d3.scaleLinear().domain([0, W]).range([x0, PANEL - 8]);
+      const sy = d3.scaleLinear().domain([lo, V]).range([y1, 6]);
+      g.append('rect').attr('class', 'pv-feasible-band').attr('x', x0).attr('y', 0).attr('width', sx(inst.capacity) - x0).attr('height', y1);
+      g.append('line').attr('class', 'pv-cap').attr('x1', sx(inst.capacity)).attr('x2', sx(inst.capacity)).attr('y1', 0).attr('y2', y1);
+      g.append('text').attr('class', 'pv-axis').attr('x', sx(inst.capacity) + 5).attr('y', y1 - 6).text(t('pvCapacity', { W: inst.capacity }));
+      const opt = model.measures.optimum;
+      g.append('line').attr('class', 'pv-opt').attr('x1', x0).attr('x2', PANEL).attr('y1', sy(opt)).attr('y2', sy(opt));
+      g.append('text').attr('class', 'pv-axis pv-opt-label').attr('x', PANEL).attr('y', sy(opt) - 5).attr('text-anchor', 'end').text(t('pvOptimum', { v: fmt(opt) }));
+      g.append('line').attr('class', 'pv-axisline').attr('x1', x0).attr('x2', PANEL).attr('y1', sy(0)).attr('y2', sy(0));
+      g.append('line').attr('class', 'pv-axisline').attr('x1', x0).attr('x2', x0).attr('y1', 0).attr('y2', y1);
+      g.append('text').attr('class', 'pv-axis').attr('x', PANEL).attr('y', y1 + 18).attr('text-anchor', 'end').text(t('pvWeight'));
+      g.append('text').attr('class', 'pv-axis').attr('x', x0 - 6).attr('y', 10).attr('text-anchor', 'end').text(t('pvValueFit'));
+      [lo, 0].filter((v, k, a) => a.indexOf(v) === k).forEach((v) => g.append('text').attr('class', 'pv-axis').attr('x', x0 - 6).attr('y', sy(v) + 4).attr('text-anchor', 'end').text(fmt(v)));
+      const pts = shownIdx(model, step).map((i) => ({ i, e: model.evals[i], fit: fitShown(model, step, i) }));
+      pts.filter((d) => d.fit && d.e.violation > 0 && sy(d.e.fitness) - sy(d.e.objective) > 9).forEach((d) => {
+        g.append('line').attr('class', 'pv-penarrow').attr('x1', sx(d.e.obj.weight)).attr('x2', sx(d.e.obj.weight))
+          .attr('y1', sy(d.e.objective) + 6).attr('y2', sy(d.e.fitness) - 8).attr('marker-end', 'url(#pvArrow)');
+      });
+      const dots = g.selectAll('g.pv-pt').data(pts).join('g')
+        .attr('class', (d) => `pv-pt${d.e.violation ? ' infeasible' : ''}${d.i === step.ind ? ' current' : ''}`)
+        .attr('transform', (d) => `translate(${sx(d.e.obj.weight)},${sy(d.e.objective)})`);
+      dots.append('circle').attr('r', (d) => (d.i === step.ind ? 7 : 5));
+      g.selectAll('path.pv-fitpt').data(pts.filter((d) => d.fit && d.e.violation > 0)).join('path')
+        .attr('class', (d) => `pv-fitpt${d.i === step.ind ? ' current' : ''}`).attr('d', d3.symbol(d3.symbolDiamond, 90)())
+        .attr('transform', (d) => `translate(${sx(d.e.obj.weight)},${sy(d.e.fitness)})`);
+    }
+
+    /** Matriz: makespan de la matriz tal cual y, encima, la penalización; la suma es la aptitud. */
+    function drawPenaltyMatrix(step, model, L) {
+      const g = panelFrame(L, 'pvPenMatrixTitle');
+      const N = model.pop.length;
+      const opt = model.measures.optimum;
+      const max = Math.max(opt, ...model.evals.map((e) => e.fitness), 1);
+      const sx = d3.scaleLinear().domain([0, max]).range([34, PANEL - 8]);
+      const rowH = Math.min(ROW, (PANEL - 30) / N);
+      const shown = new Set(shownIdx(model, step));
+      for (let i = 0; i < N; i++) {
+        const r = g.append('g').attr('class', `pv-barrow${i === step.ind ? ' current' : ''}`).attr('transform', `translate(0,${i * rowH})`);
+        r.append('text').attr('class', 'pv-axis').attr('x', 28).attr('y', rowH / 2 + 4).attr('text-anchor', 'end').text(`I${i + 1}`);
+        if (!shown.has(i)) continue;
+        const e = model.evals[i];
+        r.append('rect').attr('class', 'pv-bar').attr('x', 34).attr('y', 3).attr('height', rowH - 6).attr('width', Math.max(0, sx(e.objective) - 34));
+        if (e.violation && fitShown(model, step, i) && e.penalty > 0) {
+          r.append('rect').attr('class', 'pv-bar pen').attr('x', sx(e.objective)).attr('y', 3).attr('height', rowH - 6).attr('width', sx(e.fitness) - sx(e.objective));
+        }
+      }
+      g.append('line').attr('class', 'pv-opt').attr('x1', sx(opt)).attr('x2', sx(opt)).attr('y1', -4).attr('y2', N * rowH + 4);
+      g.append('text').attr('class', 'pv-axis pv-opt-label').attr('x', sx(opt)).attr('y', N * rowH + 18).attr('text-anchor', 'middle').text(t('pvOptimum', { v: fmt(opt) }));
+    }
+
+    /** Aptitud de cada individuo en función de λ (rectas o parábolas), con el λ actual y el crítico. */
+    function drawLambda(step, model, L) {
+      const g = panelFrame(L, 'pvLambdaTitle');
+      const C = model.curves;
+      const R = model.lambdaRange;
+      const all = C.flatMap((c) => c.fits);
+      const x0 = 40;
+      const y1 = PANEL - 30;
+      const sx = d3.scaleLinear().domain([R.min, R.max]).range([x0, PANEL - 8]);
+      const sy = d3.scaleLinear().domain([Math.min(...all), Math.max(...all)]).nice().range([y1, 6]);
+      g.append('line').attr('class', 'pv-axisline').attr('x1', x0).attr('x2', PANEL - 8).attr('y1', y1).attr('y2', y1);
+      g.append('line').attr('class', 'pv-axisline').attr('x1', x0).attr('x2', x0).attr('y1', 0).attr('y2', y1);
+      sy.ticks(5).forEach((v) => g.append('text').attr('class', 'pv-axis').attr('x', x0 - 6).attr('y', sy(v) + 4).attr('text-anchor', 'end').text(fmt(v)));
+      [R.min, (R.min + R.max) / 2, R.max].forEach((v) => g.append('text').attr('class', 'pv-axis').attr('x', sx(v)).attr('y', y1 + 16).attr('text-anchor', 'middle').text(fmt(v)));
+      g.append('text').attr('class', 'pv-axis').attr('x', PANEL - 8).attr('y', y1 + 30).attr('text-anchor', 'end').text('λ');
+      g.append('clipPath').attr('id', 'pvLamClip').append('rect').attr('x', x0).attr('width', PANEL - 8 - x0).attr('height', y1);
+      const lines = g.append('g').attr('clip-path', 'url(#pvLamClip)');
+      const N = model.pop.length;
+      const line = (i) => d3.line().x((c) => sx(c.lambda)).y((c) => sy(c.fits[i]))(C);
+      const order = d3.range(N).sort((a, b) => (a === step.ind) - (b === step.ind));
+      order.forEach((i) => {
+        const e = model.evals[i];
+        lines.append('path').attr('class', `pv-lline${e.violation ? ' bad' : ''}${i === step.ind ? ' current' : ''}`).attr('d', line(i));
+      });
+      // envolvente: la mejor aptitud para cada λ
+      lines.append('path').attr('class', 'pv-lenv').attr('d', d3.line().x((c) => sx(c.lambda)).y((c) => sy(c.fits[c.best]))(C));
+      if (model.lambdaStar && model.lambdaStar.lambda <= R.max) {
+        const xs = sx(model.lambdaStar.lambda);
+        g.append('line').attr('class', 'pv-opt').attr('x1', xs).attr('x2', xs).attr('y1', 0).attr('y2', y1);
+        g.append('text').attr('class', 'pv-axis pv-opt-label').attr('x', xs + 4).attr('y', 12).text(t('pvLambdaStar', { v: fmtFixed(model.lambdaStar.lambda, 2) }));
+      }
+      const xl = sx(model.lambda);
+      g.append('line').attr('class', 'pv-lnow').attr('x1', xl).attr('x2', xl).attr('y1', 0).attr('y2', y1);
+      g.append('text').attr('class', 'pv-axis pv-lnow-label').attr('x', xl + 4).attr('y', y1 - 6).text(t('pvLambdaNow', { v: fmt(model.lambda) }));
+    }
+
+    /** Ruleta: un sector por individuo, de tamaño proporcional a su probabilidad. */
+    function drawRoulette(step, model, L) {
+      const g = panelFrame(L, 'pvRouletteTitle');
+      const r = PANEL / 2 - 16;
+      const c = g.append('g').attr('transform', `translate(${PANEL / 2},${PANEL / 2})`);
+      if (!model.probs) {
+        c.append('circle').attr('class', 'pv-wheel-empty').attr('r', r);
+        const lines = t(model.transform === 'neg' ? 'pvRouletteNeg' : 'pvRouletteZero').split('\n');
+        lines.forEach((ln, k) => c.append('text').attr('class', 'pv-wheel-msg').attr('text-anchor', 'middle').attr('y', (k - (lines.length - 1) / 2) * 18 + 5).text(ln));
+        return;
+      }
+      const arcs = d3.pie().sort(null).value((p) => p)(model.probs);
+      const arc = d3.arc().innerRadius(0).outerRadius(r);
+      const lab = d3.arc().innerRadius(r * 0.68).outerRadius(r * 0.68);
+      arcs.forEach((a, i) => {
+        if (a.endAngle - a.startAngle <= 0) return;
+        c.append('path').attr('class', `pv-sector${i % 2 ? ' alt' : ''}${i === step.ind ? ' current' : ''}`).attr('d', arc(a));
+      });
+      arcs.forEach((a, i) => {
+        if (a.endAngle - a.startAngle < 0.24) return;
+        const [x, y] = lab.centroid(a);
+        c.append('text').attr('class', `pv-sector-label${i === step.ind ? ' current' : ''}`).attr('x', x).attr('y', y + 4).attr('text-anchor', 'middle').text(`I${i + 1}`);
+      });
+      c.append('path').attr('class', 'pv-pointer').attr('d', `M${r + 2},0 l12,-7 v14 z`);
+    }
+
+    /** Las cuatro transformaciones: reparto de la ruleta entre los individuos, del mejor al peor. */
+    function drawShares(step, model, L) {
+      const g = panelFrame(L, 'pvSharesTitle');
+      const kinds = model.transforms;
+      const x0 = 0;
+      const w = PANEL - 8;
+      const bh = 34;
+      const gap = 44;
+      kinds.forEach((k, r) => {
+        const T = model.table[k];
+        const y = 22 + r * (bh + gap);
+        const row = g.append('g').attr('class', `pv-share${k === model.transform ? ' current' : ''}`).attr('transform', `translate(${x0},${y})`);
+        row.append('text').attr('class', 'pv-share-name').attr('x', 0).attr('y', -8).text(t(`tr_${k}`));
+        if (!T.p) {
+          row.append('rect').attr('class', 'pv-share-none').attr('width', w).attr('height', bh).attr('rx', 4);
+          row.append('text').attr('class', 'pv-share-note').attr('x', 10).attr('y', bh / 2 + 4).text(t('pvSharesNone'));
+          return;
+        }
+        const order = model.f.map((_, i) => i).sort((a, b) => model.f[a] - model.f[b] || a - b);
+        let acc = 0;
+        order.forEach((i, q) => {
+          const pw = T.p[i] * w;
+          if (pw > 0) row.append('rect').attr('class', `pv-share-seg${q === 0 ? ' best' : q % 2 ? ' alt' : ''}`).attr('x', acc).attr('width', pw).attr('height', bh);
+          acc += pw;
+        });
+        row.append('rect').attr('class', 'pv-share-frame').attr('width', w).attr('height', bh).attr('rx', 2);
+        row.append('text').attr('class', 'pv-share-note').attr('x', w).attr('y', -8).attr('text-anchor', 'end')
+          .text(t('pvSharesBest', { p: fmtFixed(100 * T.pBest, 1) }));
+      });
+      g.append('text').attr('class', 'pv-axis').attr('x', 0).attr('y', 22 + kinds.length * (bh + gap) - 12).text(t('pvSharesAxis'));
+    }
+
+    /** Evaluaciones acumuladas por generación, sin caché y con caché, y el presupuesto. */
+    function drawCost(step, model, L) {
+      const g = panelFrame(L, 'pvCostTitle');
+      const ext = step.extended ? model.extended : model.extended.slice(0, model.G + 1);
+      const shown = step.extended ? ext : ext.slice(0, step.gen + 1);
+      const Gx = step.extended ? ext.length - 1 : model.G;
+      const x0 = 40;
+      const y1 = PANEL - 30;
+      const ymax = Math.max(model.budget, ...ext.map((c) => (step.extended ? c.cumCache : c.cumNo))) * 1.05;
+      const sx = d3.scaleLinear().domain([0, Gx]).range([x0, PANEL - 10]);
+      const sy = d3.scaleLinear().domain([0, ymax]).range([y1, 8]);
+      g.append('line').attr('class', 'pv-axisline').attr('x1', x0).attr('x2', PANEL - 10).attr('y1', y1).attr('y2', y1);
+      g.append('line').attr('class', 'pv-axisline').attr('x1', x0).attr('x2', x0).attr('y1', 0).attr('y2', y1);
+      sx.ticks(Math.min(Gx, 8)).filter(Number.isInteger).forEach((k) => g.append('text').attr('class', 'pv-axis').attr('x', sx(k)).attr('y', y1 + 16).attr('text-anchor', 'middle').text(k));
+      sy.ticks(5).forEach((v) => g.append('text').attr('class', 'pv-axis').attr('x', x0 - 6).attr('y', sy(v) + 4).attr('text-anchor', 'end').text(v));
+      g.append('text').attr('class', 'pv-axis').attr('x', PANEL - 10).attr('y', y1 + 30).attr('text-anchor', 'end').text(t('pvGeneration'));
+      g.append('line').attr('class', 'pv-cap').attr('x1', x0).attr('x2', PANEL - 10).attr('y1', sy(model.budget)).attr('y2', sy(model.budget));
+      g.append('text').attr('class', 'pv-axis').attr('x', x0 + 4).attr('y', sy(model.budget) - 5).text(t('pvBudget', { B: model.budget }));
+      const noCache = shown.filter((c, k) => k <= model.G);
+      g.append('path').attr('class', 'pv-cost-no').attr('d', d3.line().x((c, k) => sx(k)).y((c) => sy(c.cumNo))(noCache));
+      g.append('path').attr('class', 'pv-cost-cache').attr('d', d3.line().x((c, k) => sx(k)).y((c) => sy(c.cumCache))(shown));
+      g.selectAll('circle.pv-cost-dot').data(noCache).join('circle').attr('class', 'pv-cost-dot no').attr('cx', (c, k) => sx(k)).attr('cy', (c) => sy(c.cumNo)).attr('r', 3.5);
+      g.selectAll('circle.pv-cost-dot.cache').data(shown).join('circle').attr('class', (c, k) => `pv-cost-dot cache${!step.extended && k === step.gen ? ' current' : ''}`)
+        .attr('cx', (c, k) => sx(k)).attr('cy', (c) => sy(c.cumCache)).attr('r', (c, k) => (!step.extended && k === step.gen ? 6 : 3.5));
+      if (step.extended) {
+        const xr = sx(model.reach);
+        g.append('line').attr('class', 'pv-opt').attr('x1', xr).attr('x2', xr).attr('y1', 0).attr('y2', y1);
+        g.append('text').attr('class', 'pv-axis pv-opt-label').attr('x', xr - 4).attr('y', 14).attr('text-anchor', 'end').text(t('pvReach', { g: model.reach }));
+      }
+    }
+
+    /** Punta de flecha para las flechas de la penalización (una vez por figura). */
+    function ensureDefs() {
+      if (!svg.select('defs#pvDefs').empty()) return;
+      const defs = svg.append('defs').attr('id', 'pvDefs');
+      const m = defs.append('marker').attr('id', 'pvArrow').attr('viewBox', '0 0 10 10')
+        .attr('refX', 5).attr('refY', 5).attr('markerWidth', 7).attr('markerHeight', 7).attr('orient', 'auto-start-reverse');
+      m.append('path').attr('class', 'pv-arrowhead').attr('d', 'M0,0 L10,5 L0,10 z');
+      // rayado de la penalización (barras de la matriz)
+      const h = defs.append('pattern').attr('id', 'pvHatch').attr('patternUnits', 'userSpaceOnUse').attr('width', 7).attr('height', 7)
+        .attr('patternTransform', 'rotate(45)');
+      h.append('rect').attr('class', 'pv-hatch-bg').attr('width', 7).attr('height', 7);
+      h.append('line').attr('class', 'pv-hatch-line').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', 7);
+    }
+
     function show(step, model, width) {
+      // Página del coste: la generación que se ve sustituye a la población
+      if (step.gen != null && model.gens) model = Object.assign({}, model, model.gens[step.gen]);
       const L = layout(model, width || 900);
       svg.attr('viewBox', `0 0 ${L.W} ${L.H}`).attr('width', L.W).attr('height', L.H);
+      ensureDefs();
       drawGrid(step, model, L);
       if (step.cand != null && model.candidates) drawCandidate(step, model, L);
       if (step.show === 'distance') drawDistances(step, model, L);
       else if (step.show === 'takeover') drawTakeover(step, model, L);
+      else if (step.show === 'roulette') drawRoulette(step, model, L);
+      else if (step.show === 'shares') drawShares(step, model, L);
+      else if (step.show === 'lambda') drawLambda(step, model, L);
+      else if (step.show === 'cost') drawCost(step, model, L);
+      else if ((step.show === 'penalty' || model.penaltyPanel) && model.enc === 'knapsack-bits') drawPenaltyKnapsack(step, model, L);
+      else if ((step.show === 'penalty' || model.penaltyPanel) && model.enc === 'assignment-matrix') drawPenaltyMatrix(step, model, L);
       else if (model.enc === 'function-real' || model.enc === 'function-bits') drawFunction(step, model, L);
       else if (model.enc === 'tsp-perm') drawTsp(step, model, L);
       else if (model.enc === 'knapsack-bits') drawKnapsack(step, model, L);

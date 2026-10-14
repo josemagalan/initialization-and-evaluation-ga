@@ -6,7 +6,7 @@
 
   // Nombre del repositorio pendiente de confirmar (ver 02-DOCS/wiki/ftd/initialization-and-evaluation-ga.md)
   const REPO = 'https://github.com/josemagalan/initialization-and-evaluation-ga';
-  const VERSION = '0.1';       // en desarrollo: primera versión publicable al cerrar la fase 3
+  const VERSION = '0.3';       // en desarrollo: primera versión publicada (fases 0–3); la beta llega en la fase 6
   const SISTERS = {
     representation: 'https://josemagalan.github.io/representation-ga/',
     selection: 'https://josemagalan.github.io/selection-ga/',

@@ -77,25 +77,25 @@
       },
       sample: ['x', '→', 'f(x)'],
       items: [
-        { id: 'pipeline', level: 'B', phase: 3, ready: false, encodings: ALL,
+        { id: 'pipeline', level: 'B', phase: 3, ready: true, encodings: ALL,
           name: { es: 'Del genotipo a la aptitud', en: 'From genotype to fitness' },
           summary: {
             es: 'Decodificar, calcular el objetivo, comprobar las restricciones y obtener la aptitud, individuo a individuo.',
             en: 'Decode, compute the objective, check the constraints and obtain the fitness, one individual at a time.',
           } },
-        { id: 'objective', level: 'B', phase: 3, ready: false, encodings: ALL,
+        { id: 'objective', level: 'B', phase: 3, ready: true, encodings: ['assignment-int', 'tsp-perm', 'function-real', 'function-bits'],
           name: { es: 'Objetivo frente a aptitud', en: 'Objective versus fitness' },
           summary: {
             es: 'Maximizar o minimizar: transformar un coste en aptitud y ver cómo cambian las probabilidades de la ruleta.',
             en: 'Maximising or minimising: turning a cost into fitness and seeing how roulette-wheel probabilities change.',
           } },
-        { id: 'penalty', level: 'B', phase: 3, ready: false, encodings: ['knapsack-bits', 'assignment-matrix', 'function-real'],
+        { id: 'penalty', level: 'B', phase: 3, ready: true, encodings: ['knapsack-bits', 'assignment-matrix'],
           name: { es: 'Restricciones como penalización', en: 'Constraints as a penalty' },
           summary: {
             es: 'Restar a la aptitud un término que crece con la violación: penalización lineal o cuadrática y el peso λ.',
             en: 'Subtracting from the fitness a term that grows with the violation: linear or quadratic penalty and the weight λ.',
           } },
-        { id: 'cost', level: 'B', phase: 3, ready: false, encodings: ALL,
+        { id: 'cost', level: 'B', phase: 3, ready: true, encodings: ALL,
           name: { es: 'Coste de evaluar', en: 'The cost of evaluating' },
           summary: {
             es: 'Contar evaluaciones, fijar un presupuesto y no repetir las de individuos ya vistos (caché).',

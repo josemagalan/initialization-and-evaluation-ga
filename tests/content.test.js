@@ -340,3 +340,204 @@ print(json.dumps(out))
     assert.deepEqual(ex.slice(0, 2), ['[0, 0, 1, 1]', '[[0, 1, 0], [1, 0, 0]]']);
   }
 });
+
+// ---------- Fase 3: evaluación ----------
+
+test('evaluación: narración y pseudocódigo de cada paso de las cuatro páginas', () => {
+  const Pipe = require('../js/items/pipeline.js');
+  const Obj = require('../js/items/objective.js');
+  const Pen = require('../js/items/penalty.js');
+  const Cost = require('../js/items/cost.js');
+  checkSteps('pipeline', S.ENCODINGS.map((enc) => ({ variant: enc, steps: Pipe.run(enc, S.instance(enc, 1), 6, 2).steps })));
+  checkSteps('objective', Obj.TRANSFORMS.flatMap((tr) => Obj.ENCODINGS.map((enc) => ({ variant: tr, steps: Obj.run(enc, S.instance(enc, 1), 6, 2, { transform: tr }).steps }))));
+  checkSteps('penalty', Pen.ENCODINGS.flatMap((enc) => Pen.TYPES.map((ty) => ({ variant: `${enc}:${ty}`, steps: Pen.run(enc, S.instance(enc, 1), 6, 2, { type: ty }).steps }))));
+  checkSteps('cost', S.ENCODINGS.map((enc) => ({ variant: undefined, steps: Cost.run(enc, S.instance(enc, 1), 6, 2, { G: 3 }).steps })));
+});
+
+/** Casos de la capa de evaluación: población uniforme de cada codificación con su aptitud según la herramienta. */
+function fitnessCases() {
+  const F = require('../js/fitness.js');
+  const U = require('../js/items/uniform.js');
+  const cases = [];
+  for (const enc of S.ENCODINGS) {
+    for (let s = 0; s < 15; s++) {
+      const p = enc.startsWith('function') ? { fn: s % 2 ? 'rastrigin' : 'himmelblau' } : {};
+      const inst = S.instance(enc, s, p);
+      const sh = S.shape(enc, inst);
+      const box = enc.startsWith('function') ? require('../js/func.js').fnOf(inst.fn) : null;
+      U.population(enc, inst, 5, s).pop.forEach((x, i) => {
+        const lam = [1, 0.5, 2][i % 3];
+        const quad = i % 2 === 1;
+        const opts = { lambda: lam, type: quad ? 'quadratic' : 'linear' };
+        cases.push({ enc, inst, x, lam, quad, rows: sh.kind === 'matrix' ? S.toRows(x, sh.m) : null, a: box && box.a, b: box && box.b,
+          F: F.evaluate(enc, inst, x, opts).fitness, F1: F.evaluate(enc, inst, x).fitness });
+      });
+    }
+  }
+  return cases;
+}
+
+test('del genotipo a la aptitud (JavaScript y Python): la misma aptitud que la herramienta en las seis codificaciones', () => {
+  const cases = fitnessCases();
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('pipeline').getCode('javascript', l));
+    const fnOf = (c, p) => (c.inst.fn === 'rastrigin' ? code.rastrigin(p[0], p[1]) : code.himmelblau(p[0], p[1]));
+    cases.forEach((c, i) => {
+      let v;
+      if (c.enc === 'knapsack-bits') {
+        assert.equal(code.knapsackFitness(c.inst.weights, c.inst.values, c.inst.capacity, c.x, c.lam, c.quad), c.F, `mochila ${i}`);
+        v = code.knapsackFitness(c.inst.weights, c.inst.values, c.inst.capacity, c.x);
+      } else if (c.enc === 'assignment-int') v = code.assignmentMakespan(c.inst.p, c.x);
+      else if (c.enc === 'assignment-matrix') {
+        assert.equal(code.matrixFitness(c.inst.p, c.rows, c.lam, c.quad), c.F, `matriz ${i}`);
+        v = code.matrixFitness(c.inst.p, c.rows);
+      } else if (c.enc === 'tsp-perm') v = code.tourLength(c.inst.coords, c.x);
+      else if (c.enc === 'function-real') v = fnOf(c, c.x);
+      else v = fnOf(c, code.decodeBits(c.x, c.inst.k, c.a, c.b));
+      assert.equal(v, c.F1, `${c.enc} ${i}`);
+    });
+    assert.deepEqual(code.evaluatePopulation([[3, 2], [0, 0]], (p) => code.himmelblau(...p)), { values: [0, 170], evaluations: 2 });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('pipeline', 'fitness_evaluation.py', l, `
+out = []
+for c in cases:
+    inst = c["inst"]; x = c["x"]
+    fn = rastrigin if inst.get("fn") == "rastrigin" else himmelblau
+    e = c["enc"]
+    if e == "knapsack-bits":
+        out.append([knapsack_fitness(inst["weights"], inst["values"], inst["capacity"], x, c["lam"], c["quad"]), knapsack_fitness(inst["weights"], inst["values"], inst["capacity"], x)])
+    elif e == "assignment-int": out.append([None, assignment_makespan(inst["p"], x)])
+    elif e == "assignment-matrix": out.append([matrix_fitness(inst["p"], c["rows"], c["lam"], c["quad"]), matrix_fitness(inst["p"], c["rows"])])
+    elif e == "tsp-perm": out.append([None, tour_length(inst["coords"], x)])
+    elif e == "function-real": out.append([None, fn(*x)])
+    else: out.append([None, fn(*decode_bits(x, inst["k"], c["a"], c["b"]))])
+print(json.dumps(out))
+`, cases);
+    res.forEach(([f, f1], i) => {
+      if (f != null) assert.ok(Math.abs(f - cases[i].F) < 1e-9, `${l}: caso ${i}`);
+      assert.ok(Math.abs(f1 - cases[i].F1) < 1e-9 * Math.max(1, Math.abs(cases[i].F1)), `${l}: caso ${i} (${cases[i].enc})`);
+    });
+    assert.deepEqual(ex.slice(0, 5), ['11', '5', '12.0', '[5.0, -5.0]', '([0, 170], 2)']);
+  }
+});
+
+test('objetivo frente a aptitud (JavaScript y Python): mismas aptitudes y probabilidades que la herramienta', () => {
+  const Obj = require('../js/items/objective.js');
+  const cases = [];
+  for (const enc of Obj.ENCODINGS) {
+    for (let s = 0; s < 20; s++) {
+      const r = Obj.run(enc, S.instance(enc, s), 4 + (s % 17), s, {});
+      cases.push({ f: r.f, T: Obj.TRANSFORMS.map((k) => [r.table[k].F, r.table[k].p]) });
+    }
+  }
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('objective').getCode('javascript', l));
+    cases.forEach((c, i) => {
+      const got = [code.negative(c.f), code.cMinusF(c.f), code.inverse(c.f), code.rankFitness(c.f)];
+      got.forEach((F, k) => {
+        assert.deepEqual(F, c.T[k][0], `caso ${i}, ${Obj.TRANSFORMS[k]}`);
+        let p = null;
+        try { p = code.rouletteProbabilities(F); } catch (e) { p = null; }
+        assert.deepEqual(p, c.T[k][1], `caso ${i}, ruleta ${Obj.TRANSFORMS[k]}`);
+      });
+    });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('objective', 'cost_to_fitness.py', l, `
+def safe(F):
+    try: return roulette_probabilities(F)
+    except ValueError: return None
+out = []
+for c in cases:
+    Fs = [negative(c["f"]), c_minus_f(c["f"]), inverse(c["f"]), rank_fitness(c["f"])]
+    out.append([[F, safe(F)] for F in Fs])
+print(json.dumps(out))
+`, cases);
+    res.forEach((r, i) => r.forEach(([F, p], k) => {
+      F.forEach((v, j) => assert.ok(Math.abs(v - cases[i].T[k][0][j]) < 1e-12, `${l}: caso ${i}`));
+      if (cases[i].T[k][1] == null) assert.equal(p, null);
+      else p.forEach((v, j) => assert.ok(Math.abs(v - cases[i].T[k][1][j]) < 1e-12));
+    }));
+    assert.deepEqual(ex.slice(0, 4), ['[0, 3, 1, 3]', '[0.2, 0.5, 0.25, 0.5]', '[1.0, 3.5, 2.0, 3.5]', '[0.1, 0.35, 0.2, 0.35]']);
+  }
+});
+
+test('penalización (JavaScript y Python): misma aptitud penalizada y mismo λ* que la herramienta', () => {
+  const Pen = require('../js/items/penalty.js');
+  const cases = [];
+  for (const enc of Pen.ENCODINGS) {
+    for (const type of Pen.TYPES) {
+      for (let s = 0; s < 20; s++) {
+        const inst = S.instance(enc, s);
+        const lambda = Pen.normLambda(enc, (s % 7) * 0.7);
+        const r = Pen.run(enc, inst, 10, s, { type, lambda });
+        const m = enc === 'assignment-matrix' ? inst.p[0].length : 0;
+        cases.push({ enc, type, lambda, inst, pop: m ? r.pop.map((x) => S.toRows(x, m)) : r.pop, fits: r.fits,
+          z: r.evals.map((e) => e.objective), v: r.evals.map((e) => e.violation), star: r.lambdaStar ? r.lambdaStar.lambda : null });
+      }
+    }
+  }
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('penalty').getCode('javascript', l));
+    cases.forEach((c, i) => {
+      const q = c.type === 'quadratic';
+      c.pop.forEach((x, k) => {
+        const f = c.enc === 'knapsack-bits' ? code.knapsackPenalised(c.inst.weights, c.inst.values, c.inst.capacity, x, c.lambda, q)
+          : code.matrixPenalised(c.inst.p, x, c.lambda, q);
+        assert.equal(f, c.fits[k], `caso ${i}.${k}`);
+      });
+      assert.equal(code.criticalLambda(c.z, c.v, c.enc === 'knapsack-bits', q), c.star, `λ* ${i}`);
+    });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('penalty', 'penalty_fitness.py', l, `
+out = []
+for c in cases:
+    q = c["type"] == "quadratic"; inst = c["inst"]
+    if c["enc"] == "knapsack-bits": fs = [knapsack_penalised(inst["weights"], inst["values"], inst["capacity"], x, c["lambda"], q) for x in c["pop"]]
+    else: fs = [matrix_penalised(inst["p"], x, c["lambda"], q) for x in c["pop"]]
+    out.append([fs, critical_lambda(c["z"], c["v"], c["enc"] == "knapsack-bits", q)])
+print(json.dumps(out))
+`, cases);
+    res.forEach(([fs, star], i) => {
+      fs.forEach((f, k) => assert.ok(Math.abs(f - cases[i].fits[k]) < 1e-9, `${l}: caso ${i}.${k}`));
+      if (cases[i].star == null) assert.equal(star, null);
+      else assert.ok(Math.abs(star - cases[i].star) < 1e-12);
+    });
+    assert.deepEqual(ex.slice(0, 4), ['11', '11.0', '7', '1.25']);
+  }
+});
+
+test('coste de evaluar (JavaScript y Python): mismo recuento de evaluaciones con y sin caché que la herramienta', () => {
+  const Cost = require('../js/items/cost.js');
+  const cases = [];
+  for (const enc of S.ENCODINGS) {
+    for (let s = 0; s < 6; s++) {
+      const r = Cost.run(enc, S.instance(enc, s), 10, s, { G: 6 });
+      cases.push({ gens: r.gens.map((g) => g.pop), rows: r.gens.map((g) => [g.newEvals, g.cumNo, g.cumCache]) });
+    }
+  }
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('cost').getCode('javascript', l));
+    cases.forEach((c, i) => {
+      assert.deepEqual(code.evaluationsPerGeneration(c.gens), c.rows, `caso ${i}`);
+      const f = new code.CachedFitness((x) => x.length);
+      c.gens.flat().forEach((x) => f.evaluate(x));
+      assert.equal(f.evaluations, c.rows[c.rows.length - 1][2]);
+      assert.equal(f.evaluations + f.hits, c.rows[c.rows.length - 1][1]);
+    });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('cost', 'cached_fitness.py', l, `
+out = []
+for c in cases:
+    f = CachedFitness(len)
+    for g in c["gens"]:
+        for x in g: f(x)
+    out.append([[list(r) for r in evaluations_per_generation(c["gens"])], f.evaluations, f.hits])
+print(json.dumps(out))
+`, cases);
+    res.forEach(([rows, ev, hits], i) => {
+      assert.deepEqual(rows, cases[i].rows, `${l}: caso ${i}`);
+      assert.equal(ev + hits, cases[i].rows[cases[i].rows.length - 1][1]);
+    });
+    assert.deepEqual(ex.slice(0, 2), ['2 2', '[(2, 2, 2), (1, 4, 3), (0, 6, 3)]']);
+  }
+});
