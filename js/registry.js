@@ -117,7 +117,7 @@
           name: { es: 'Aptitud aproximada', en: 'Approximate fitness' },
           summary: {
             es: 'Un metamodelo barato en lugar de la evaluación real: cuánto se ahorra y cuánto se equivoca.',
-            en: 'A cheap surrogate model instead of the true evaluation: how much it saves and how wrong it gets.',
+            en: 'A cheap meta-model instead of the true evaluation: how much it saves and how wrong it gets.',
           } },
         { id: 'multi', level: '+', phase: 4, ready: true, encodings: ['knapsack-bits', 'assignment-int'],
           name: { es: 'Varios objetivos', en: 'Several objectives' },

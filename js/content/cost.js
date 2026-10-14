@@ -17,8 +17,8 @@
     ],
     en: [
       'In real applications, evaluation is usually the most expensive part of a genetic algorithm: fitness may be a long subroutine, a simulation or an experiment. Talbi (2009, §1.4.2.6) gives the example of aerodynamic design, where a single evaluation is a simulation that may take more than a day. Selection, crossover and mutation cost very little by comparison.',
-      'A generational genetic algorithm evaluates all N individuals of every generation: with G generations, N · (G + 1) evaluations including the initial population. That number is the algorithm’s budget, which is why two algorithms are compared fairly by counting evaluations rather than generations or seconds on a particular computer.',
-      'Many of those evaluations are repeats. Selection copies the good individuals, and mutation leaves many children identical to their parent: with a probability of 1/L per gene, a child comes out unchanged with probability (1 − 1/L)ᴸ, close to 0.37. As the population converges, repeats become more frequent. A cache (a table from chromosome to fitness) avoids evaluating an individual already seen: before evaluating, the table is looked up.',
+      'A generational genetic algorithm evaluates all N individuals of every generation: with G generations, N · (G + 1) evaluations including the initial population. That number is the algorithm’s evaluation budget, which is why two algorithms are compared fairly by counting evaluations rather than generations or seconds on a particular computer.',
+      'Many of those evaluations are repeats. Selection copies the good individuals, and mutation leaves many children identical to their parent: with a probability of 1/L per gene, a child comes out unchanged with probability (1 − 1/L)ᴸ, close to 0.37. As the population converges, repeats become more frequent. A cache (a table from chromosome to fitness) avoids evaluating an individual already seen: before evaluating, the table is checked.',
       'To show it, the tool evolves the uniform initial population with a minimal algorithm, without crossover: binary tournaments and a mutation of each gene with probability 1/L that redraws it with the uniform rule for its type (in the permutation, it swaps it with another position). It counts the evaluations with and without the cache and, for the same budget, how far the cache lets the algorithm go.',
       'A cache comes with conditions. It is only valid if fitness is deterministic: if two evaluations of the same individual can give different values (noisy fitness), keeping the first one biases the search. It takes memory, one entry per distinct individual, although it can be limited to the last few generations. And the key matters: in the travelling salesman problem the 2n chromosomes of one tour have the same fitness, so a cache keyed by tour (phenotype) would save more than one keyed by chromosome, which is the one the tool uses. Other ways of saving are evaluating in parallel or replacing some evaluations with an approximate model (Talbi, 2009, §1.4.2.6).',
     ],
@@ -49,7 +49,7 @@
       c_curve: 'In {G} generations, the cache has avoided {saved} of the {B} evaluations ({pct}%). Repeats come from parents that pass through without mutating and from individuals that selection copies several times; the more the population converges, the more there are.',
       c_reach: 'With the same budget of {B} evaluations, the cache lets the algorithm reach generation {R} instead of {G}. Same cost, more search.',
       c_reach_capped: 'With the same budget of {B} evaluations, the cache lets the algorithm go beyond generation {max} (the tool’s limit) instead of stopping at {G}: almost every individual is a repeat.',
-      c_end: 'Counting evaluations, not generations, is the fair way to measure effort. The cache saves the repeated ones if fitness is deterministic; if it is noisy, it does not work. It takes one entry per distinct individual.',
+      c_end: 'Counting evaluations, not generations, is the fair way to measure effort. The cache saves the repeated ones if fitness is deterministic; if fitness is noisy, the cache is of no use. It takes one entry per distinct individual.',
       c_end_tsp: 'Counting evaluations, not generations, is the fair way to measure effort. The cache saves the repeated ones if fitness is deterministic. In the travelling salesman problem, a cache keyed by tour instead of by chromosome would save even more: 2n chromosomes describe the same tour.',
     },
   };
@@ -235,7 +235,7 @@ if (typeof module !== 'undefined' && module.exports) {
       title: 'The cost of evaluating: a fitness function with a cache, and the evaluation count, with and without the cache, for a sequence of generations.',
       ref: 'References: Talbi, E.-G. (2009), §1.4.2.6; Bautista-Valhondo, J. (2020); Luke, S. (2013).',
       docClass: 'Wraps a deterministic fitness function: an individual already seen is not evaluated again.',
-      docKey: 'cache key: the chromosome (for the travelling salesman the tour could be used)',
+      docKey: 'cache key: the chromosome (for the travelling salesman problem, the tour could be used)',
       docEvals: 'real evaluations',
       docHits: 'lookups answered by the cache',
       docCount: 'For each generation: (new evaluations, cumulative without the cache, cumulative with the cache).',

@@ -15,10 +15,10 @@
       'La gestión del metamodelo es lo delicado: hay que mezclar evaluaciones reales y aproximadas, añadir las reales al archivo para que el modelo mejore y evitar que el algoritmo converja a un falso óptimo del modelo (Jin, 2005). El equilibrio es el de siempre: una evaluación real cara y exacta frente a una aproximada barata y con error.',
     ],
     en: [
-      'When an evaluation takes hours, some of them can be replaced by a meta-model: a cheap function that approximates fitness from the individuals already evaluated (Talbi, 2009, §1.4.2.6; Jin, 2005). It is also called a surrogate model or approximate fitness. Neural networks, response surfaces, kriging or Gaussian processes are common meta-models; the tool uses two very simple ones so that the idea shows.',
-      'The nearest neighbour gives a new individual the fitness of the closest evaluated individual. Inverse distance weighting (Shepard, 1968) averages all known fitness values, with weights 1/d² that give more importance to nearby points. Both use only the archive: the N individuals of the initial population, evaluated for real. With few points and a function with narrow valleys, their errors can be large.',
+      'When an evaluation takes hours, some of them can be replaced by a meta-model: a cheap function that approximates fitness from the individuals already evaluated (Talbi, 2009, §1.4.2.6; Jin, 2005). It is also called a surrogate model or approximate fitness. Neural networks, response surfaces, kriging or Gaussian processes are common meta-models; the tool uses two very simple ones so that the idea is clear.',
+      'The nearest-neighbour meta-model gives a new individual the fitness of the closest evaluated individual. Inverse distance weighting (Shepard, 1968) averages all known fitness values, with weights 1/d² that give more importance to nearby points. Both use only the archive: the N individuals of the initial population, evaluated for real. With few points and a function with narrow valleys, their errors can be large.',
       'A meta-model does not need to get the value right: ranking well is enough. That is why the Spearman rank correlation between estimated and true fitness is measured too. A typical use is pre-selection: out of many candidates, the meta-model picks the K that look best and only those are evaluated for real. The evaluations of the rest are saved, at the risk of discarding the best one without knowing it.',
-      'Managing the meta-model is the delicate part: real and approximate evaluations have to be mixed, the real ones added to the archive so that the model improves, and the algorithm kept from converging to a false optimum of the model (Jin, 2005). The balance is the usual one: an expensive, exact real evaluation against a cheap approximate one with an error.',
+      'Managing the meta-model is the delicate part: real and approximate evaluations have to be mixed, the real ones added to the archive so that the model improves, and the algorithm kept from converging to a false optimum of the model (Jin, 2005). The balance is the usual one: an expensive, exact real evaluation against a cheap approximate one subject to error.',
     ],
   };
 
@@ -46,11 +46,11 @@
       s_rule_idw: 'N = {N} new candidates arrive, C1 to C{N} (diamonds). Inverse distance weighting meta-model: F̂ = Σ wₖ Fₖ / Σ wₖ, with wₖ = 1/dₖ². It costs no evaluation.',
       s_first_nn: 'Candidate 1, at ({x1}; {x2}): the closest point of the archive is A{k}, at {d}, with F = {Fk}. So F̂ = {Fp}. Its true fitness would be {F}.',
       s_first_idw: 'Candidate 1, at ({x1}; {x2}): every point of the archive contributes, the closer ones with more weight (thicker lines); the closest is A{k}. F̂ = {Fp}. Its true fitness would be {F}.',
-      s_all: 'All candidates: estimated against true. The mean error is {mae} and the largest, {max}. The rank correlation is ρ = {rho}: with N = {N} points in the archive, the meta-model ranks only fairly.',
+      s_all: 'All candidates: estimated against true. The mean error is {mae} and the largest, {max}. The rank correlation is ρ = {rho}: with N = {N} points in the archive, the meta-model ranks only moderately well.',
       s_all_good: 'All candidates: estimated against true. The mean error is {mae} and the largest, {max}, but the rank correlation is ρ = {rho}: it ranks quite well, which is what matters for selection.',
-      s_presel_found: 'Pre-selection: only the K = {K} candidates with the best F̂ (shaded area) are evaluated for real. {saved} of {N} evaluations are saved and the best real candidate, C{i}, is among them.',
+      s_presel_found: 'Pre-selection: only the K = {K} candidates with the best F̂ (shaded area) are evaluated for real. {saved} of {N} evaluations are saved and the best real candidate, C{i}, is among those evaluated.',
       s_presel_missed: 'Pre-selection: only the K = {K} candidates with the best F̂ (shaded area) are evaluated for real. {saved} of {N} evaluations are saved, but the best real candidate, C{i} (F = {Fi}), is left out; the best pre-selected one is C{j} (F = {Fj}).',
-      s_end: 'The meta-model saves evaluations at the price of error. It works better with more points in the archive, adding every real evaluation that is made, and combined with real evaluations so as not to chase a false optimum.',
+      s_end: 'The meta-model saves evaluations at the price of error. It works better with more points in the archive, when every real evaluation made is added to it, and when it is combined with real evaluations so as not to chase a false optimum.',
     },
   };
 

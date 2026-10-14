@@ -26,7 +26,7 @@
 
   const stages = {
     es: ['Población', 'Violación', 'Penalización', 'Aptitud', 'El peso λ'],
-    en: ['Population', 'Violation', 'Penalty', 'Fitness', 'The weight λ'],
+    en: ['Population', 'Violation', 'Penalty', 'Fitness', 'Penalty weight λ'],
   };
 
   const narration = {
@@ -64,8 +64,8 @@
       p_pop_knapsack: 'Uniform initial population: {f} of the {N} individuals fit in the knapsack (W = {W}). The value of those that do not fit can still be computed, and {over} of them are worth more than the best one that fits ({bf}).',
       p_pop_knapsack_none: 'Uniform initial population: none of the {N} individuals fits in the knapsack (W = {W}). They all have a value, but none is a valid solution.',
       p_pop_matrix: 'Uniform initial population: {f} of the {N} matrices are valid assignments. The makespan of the matrix as it stands can always be computed: each 1 adds its time and a task with no 1 adds nothing, so an infeasible matrix can have a makespan below the optimum.',
-      p_pop_matrix_none: 'Uniform initial population: none of the {N} matrices is a valid assignment, as is usual. The makespan of the matrix as it stands can always be computed: each 1 adds its time and a task with no 1 adds nothing, so many of them have a makespan below the optimum.',
-      p_viol_knapsack: 'Violation: the excess weight, e = max(0, weight − W). It is 0 for the {f} that fit and reaches {vmax} for the one that exceeds the most.',
+      p_pop_matrix_none: 'Uniform initial population: none of the {N} matrices is a valid assignment, as is typical. The makespan of the matrix as it stands can always be computed: each 1 adds its time and a task with no 1 adds nothing, so many of them have a makespan below the optimum.',
+      p_viol_knapsack: 'Violation: the excess weight, e = max(0, weight − W). It is 0 for the {f} that fit and reaches {vmax} for the one furthest over the limit.',
       p_viol_matrix: 'Violation: v = Σᵢ |Σⱼ yᵢⱼ − 1|, one violation for each row with no 1 and another for each extra 1. In this population it ranges from {vmin} to {vmax}.',
       p_rule_knapsack_linear: 'Linear penalty: F = value − λ · e, with λ = {l}. Each unit of excess costs {l} units of value.',
       p_rule_knapsack_quadratic: 'Quadratic penalty: F = value − (λ · e)², with λ = {l}. A small excess is barely punished; a large one, heavily.',
@@ -78,7 +78,7 @@
       p_first_matrix_quadratic: 'First infeasible individual, I{i}: makespan as it stands {z} and v = {v} violations. F = {z} + ({l} · {v})² = {z} + {P} = {F}.',
       p_fit_knapsack: 'Fitness of the whole population. In the panel, each infeasible individual drops from its value (circle) to its fitness (diamond); the feasible ones stay where they were.',
       p_fit_matrix: 'Fitness of the whole population. In the panel, the penalty is added, hatched, to each bar of the makespan as it stands.',
-      p_best_ok: 'The best by fitness is I{i}, feasible, with F = {F}. With this λ, the penalty puts every infeasible individual behind.',
+      p_best_ok: 'The best by fitness is I{i}, feasible, with F = {F}. With this λ, the penalty leaves every infeasible individual behind.',
       p_best_bad_knapsack: 'The best by fitness is I{i}, which does not fit in the knapsack: F = {F} beats the best one that fits ({B}). With λ = {l} the penalty is too small: selection would prefer a solution that is not valid.',
       p_best_bad_matrix: 'The best by fitness is I{i}, which is not a valid assignment: F = {F} is below the best valid makespan ({B}). With λ = {l} the penalty is too small: selection would prefer a solution that is not valid.',
       p_best_nofeas: 'There is no feasible individual: the best by fitness is I{i}, with F = {F} and a violation of {v}. λ = {l} decides how much the violation weighs against the objective.',

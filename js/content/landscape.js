@@ -19,7 +19,7 @@
       'A fitness landscape is made of three things: the space of chromosomes, a neighbourhood relation (which chromosomes can be reached from which with a small change) and the fitness of each chromosome (Talbi, 2009, §2.2). If each chromosome is pictured at a height equal to its fitness, valleys, peaks, plateaus and cliffs appear. The idea comes from biology: Wright (1932) used it to explain how mutation and selection move a population across a landscape of genotypes.',
       'The landscape is not a property of the problem alone: it also depends on the representation and the neighbourhood. The tool uses the one-gene neighbourhood of each encoding: flipping a bit, moving a task to another machine, swapping two cities or moving one coordinate by 0.1. The bit string shows it well: two neighbouring points in the plane may be several bits apart, and flipping the first bit of a variable jumps half the box.',
       'A local optimum is a chromosome with no better neighbour. A local search that always moves to the best neighbour ends in the local optimum of the basin where it started; if there are many local optima (a rugged landscape, such as Rastrigin’s function), each starting point ends in a different one and hardly ever in the global one. Himmelblau’s function, by contrast, has few basins and all of them lead to a global minimum. A genetic algorithm moves across the landscape with a whole population and with crossover, which jumps between basins, but the shape of the landscape still decides how hard the problem is.',
-      'To summarise the shape of a landscape without drawing it, Jones and Forrest (1995) proposed the fitness-distance correlation (FDC): the correlation between the fitness of many chromosomes and their distance to the nearest optimum. With fitness oriented towards minimisation, a clearly positive correlation means that getting closer to the optimum improves fitness (a guided problem); near zero, that fitness gives no direction; negative, that it is deceptive. Its great limitation is that the optimum has to be known, so it is useful for studying test problems rather than for solving a new one (Talbi, 2009, §2.2.2).',
+      'To summarise the shape of a landscape without drawing it, Jones and Forrest (1995) proposed the fitness–distance correlation (FDC): the correlation between the fitness of many chromosomes and their distance to the nearest optimum. With fitness oriented towards minimisation, a clearly positive correlation means that getting closer to the optimum improves fitness (a guided problem); near zero, that fitness gives no direction; negative, that it is deceptive. Its main limitation is that the optimum has to be known, so it is useful for studying test problems rather than for solving a new one (Talbi, 2009, §2.2.2).',
       'In the knapsack and the matrix, the landscape is that of the fitness penalised with λ = 1, which is what the algorithm sees: its best chromosome may not be a valid solution. In small spaces (knapsack, integer assignment and bit strings, up to 20,000 chromosomes), the tool goes through all of them and counts the local optima.',
     ],
   };
@@ -62,23 +62,23 @@
       nb_perm: 'swap two cities of the tour',
       nb_real: 'move one coordinate up or down by 0.1',
       l_space: 'Fitness landscape: the chromosomes, the neighbourhood and the fitness. Here two chromosomes are neighbours if one becomes the other when you {nbdesc}, so each has {k} neighbours. The initial population (N = {N}) is {N} starting points in that landscape.',
-      l_neigh: 'Neighbours of individual 1, {chrom} (F = {F}). Better neighbours: {b} of {k}. The best is {label}, with F = {bestF}. The line marks the fitness of I1.',
+      l_neigh: 'Neighbours of individual 1, {chrom} (F = {F}). Better neighbours: {b} of {k}. The best is neighbour {label}, with F = {bestF}. The line marks the fitness of I1.',
       l_neigh_local: 'Neighbours of individual 1, {chrom} (F = {F}): none of its {k} neighbours is better. I1 is already a local optimum.',
       l_neigh_real: 'Individual 1, the point ({x1}; {x2}) with F = {F}. The cross-sections of the function through I1 show its shape along each axis. Better neighbours (±0.1 in each coordinate): {b} of {k}.',
       l_neigh_real_local: 'Individual 1, the point ({x1}; {x2}) with F = {F}. None of its {k} neighbours (±0.1 in each coordinate) is better: it lies at the bottom of a valley.',
-      l_neigh_fbits: 'Neighbours of individual 1, {chrom} (F = {F}). Better neighbours: {b} of {k}; the best, {label}, has F = {bestF}. Flipping one bit may jump far: the most distant neighbour is {jump} away in the plane.',
+      l_neigh_fbits: 'Neighbours of individual 1, {chrom} (F = {F}). Better neighbours: {b} of {k}; the best, neighbour {label}, has F = {bestF}. Flipping one bit may jump far: the most distant neighbour is {jump} away in the plane.',
       l_climb_zero: 'Local search from individual 1: it takes no step, because it is already a local optimum (F = {F0}).',
       l_climb_opt: 'Local search from individual 1: it moves {s} times to the best neighbour, from F = {F0} to F = {F1}, and reaches an optimum of the problem ({opt}).',
       l_climb_local: 'Local search from individual 1: it moves {s} times to the best neighbour, from F = {F0} to F = {F1}, and gets stuck in a local optimum: no neighbour is better, but the optimum of the problem is {opt}.',
       l_pop: 'Local search from every individual of the population: they end in {d} different local optima and only {r} of the {N} reach an optimum of the problem. On average, {mean} steps. Each starting point has its basin.',
       l_pop_all: 'Local search from every individual of the population: all {N} reach an optimum of the problem, through {d} different end points, in {mean} steps on average. The landscape is well guided for this neighbourhood.',
       l_pop_none: 'Local search from every individual of the population: they end in {d} different local optima and none reaches an optimum of the problem. A rugged landscape: local search alone is not enough.',
-      l_fdc_easy: 'Fitness-distance correlation over {n} uniform chromosomes (grey; the dark ones are the population): r = {r}. Positive: the closer to the optimum, the better the fitness, so fitness guides the search.',
-      l_fdc_flat: 'Fitness-distance correlation over {n} uniform chromosomes (grey; the dark ones are the population): r = {r}. Close to 0: fitness says little about how far away the optimum is.',
-      l_fdc_mislead: 'Fitness-distance correlation over {n} uniform chromosomes (grey; the dark ones are the population): r = {r}. Negative: the best chromosomes tend to lie far from the optimum; fitness is deceptive.',
-      l_fdc_none: 'The fitness-distance correlation is undefined: every chromosome in the sample has the same fitness or the same distance.',
+      l_fdc_easy: 'Fitness–distance correlation over {n} uniform chromosomes (in grey; the dark ones are the population): r = {r}. Positive: the closer to the optimum, the better the fitness, so fitness guides the search.',
+      l_fdc_flat: 'Fitness–distance correlation over {n} uniform chromosomes (in grey; the dark ones are the population): r = {r}. Close to 0: fitness says little about how far away the optimum is.',
+      l_fdc_mislead: 'Fitness–distance correlation over {n} uniform chromosomes (in grey; the dark ones are the population): r = {r}. Negative: the best chromosomes tend to lie far from the optimum; fitness is deceptive.',
+      l_fdc_none: 'The fitness–distance correlation is undefined: every chromosome in the sample has the same fitness or the same distance.',
       l_end_count: 'The whole space has {s} chromosomes and {l} local optima, {g} of which have the best fitness. The more local optima, the more rugged the landscape and the more the population needs diversity.',
-      l_end_nocount: 'This space is too large (or continuous) to go through entirely, but the searches from the population and the fitness-distance correlation already show its shape. The more local optima, the more the population needs diversity.',
+      l_end_nocount: 'This space is too large (or continuous) to go through entirely, but the searches from the population and the fitness–distance correlation already show its shape. The more local optima, the more the population needs diversity.',
     },
   };
 
@@ -312,7 +312,7 @@ if (typeof module !== 'undefined' && module.exports) {
       example: 'Ejemplos pequeños: OneMax con tres bits, vecinos de una permutación y una correlación perfecta',
     },
     en: {
-      title: 'Fitness landscape: one-gene neighbours, steepest descent (or ascent) local search and fitness-distance correlation.',
+      title: 'Fitness landscape: one-gene neighbours, steepest-descent (or -ascent) local search and fitness–distance correlation.',
       ref: 'References: Wright, S. (1932); Jones, T., & Forrest, S. (1995); Talbi, E.-G. (2009), §2.2; Bautista-Valhondo, J. (2020).',
       docBits: 'Neighbours of a bit string (or of a flattened matrix): flip one bit.',
       docInt: 'Neighbours of an assignment with integers from 1 to m: one task moves to another machine.',
@@ -340,7 +340,7 @@ if (typeof module !== 'undefined' && module.exports) {
     }),
     C.ref('jonesForrest1995', {
       es: 'Propuesta de la correlación aptitud-distancia como medida de la dificultad de un problema para los algoritmos genéticos.',
-      en: 'Proposal of the fitness-distance correlation as a measure of how hard a problem is for genetic algorithms.',
+      en: 'Proposal of the fitness–distance correlation as a measure of how hard a problem is for genetic algorithms.',
     }),
   ];
 

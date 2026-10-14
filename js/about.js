@@ -6,7 +6,7 @@
 
   // Nombre del repositorio pendiente de confirmar (ver 02-DOCS/wiki/ftd/initialization-and-evaluation-ga.md)
   const REPO = 'https://github.com/josemagalan/initialization-and-evaluation-ga';
-  const VERSION = '0.5';       // en desarrollo (fases 0–5); la beta llega en la fase 6
+  const VERSION = '0.9';       // beta pública; la 1.0 llegará tras la revisión docente del español
   const SISTERS = {
     representation: 'https://josemagalan.github.io/representation-ga/',
     selection: 'https://josemagalan.github.io/selection-ga/',
@@ -42,9 +42,9 @@
       authorsTitle: 'Autores',
       group: 'Todos los autores forman parte del grupo de investigación Los Goonies (Group of Organization and Industrial Engineering and Simulation).',
       statusTitle: 'Versión',
-      status: 'Versión {v}, en desarrollo. Ya están todas las estrategias de inicialización, todos los aspectos de la evaluación, los ejercicios de práctica y los bancos de preguntas para Moodle; falta la revisión final antes de la versión beta. Si encuentras un error o tienes una sugerencia, cuéntanoslo en',
+      status: 'Versión {v}, beta pública. Están todas las estrategias de inicialización y todos los aspectos de la evaluación, en todos los modos (paso a paso, para saber más, práctica, comparación y bancos de preguntas para Moodle). Faltan la revisión docente del texto en español, cotejar algunas referencias con las fuentes originales y probar un banco de preguntas en un Moodle real. Si encuentras un error o tienes una sugerencia, cuéntanoslo en',
       issues: 'GitHub',
-      footBeta: 'versión {v} en desarrollo',
+      footBeta: 'beta {v}',
       citeTitle: 'Cómo citar',
       cite: 'Si quieres citar esta herramienta, ponte en contacto con los autores.',
       sisterTitle: 'Herramientas hermanas',
@@ -67,9 +67,9 @@
       authorsTitle: 'Authors',
       group: 'All authors are members of the Los Goonies research group (Group of Organization and Industrial Engineering and Simulation).',
       statusTitle: 'Version',
-      status: 'Version {v}, in development. Every initialisation strategy and evaluation aspect, the practice exercises and the Moodle question banks are now available; the final review before the beta release is still to come. If you find a mistake or have a suggestion, please tell us on',
+      status: 'Version {v}, public beta. Every initialisation strategy and every evaluation aspect is available in every mode (step by step, Learn more, practice, comparison and Moodle question banks). The Spanish text is awaiting review by the teaching team, some references still have to be checked against the original sources, and a question bank still has to be tried out in a production Moodle. If you find a mistake or have a suggestion, please tell us on',
       issues: 'GitHub',
-      footBeta: 'version {v} in development',
+      footBeta: 'beta {v}',
       citeTitle: 'How to cite',
       cite: 'If you would like to cite this tool, please contact the authors.',
       sisterTitle: 'Sister tools',

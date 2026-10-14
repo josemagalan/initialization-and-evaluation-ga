@@ -20,7 +20,7 @@
       'Changing the sign, F = −f, is the usual way to turn minimisation into maximisation in operations research, and it keeps the order; but the fitness values come out negative and the wheel cannot be built. Goldberg proposes F = C − f, where C is the largest cost in the current population (or in the last few generations, or a fixed value): the worst individual gets F = 0 and is never drawn, and C changes from one generation to the next. Another common option is F = 1/(1 + f), always positive if f ≥ 0; with it, the best is drawn (1 + f of the worst)/(1 + f of the best) times as often as the worst, so the pressure depends on the scale of f: adding a constant to f, which does not change the problem, changes selection.',
       'Rank-based fitness uses only the order: individuals are sorted from the worst (rank 1) to the best (rank N) and F is the rank; for equal costs, the average of the ranks. The best is then drawn on average 2N/(N + 1) times in N spins, however large its lead over the second. This is Baker’s (1985) linear ranking with maximum expected value 2N/(N + 1). Ranking stops an outstanding individual from taking almost the whole wheel and keeps up the pressure when all costs are alike (Mitchell, 1998).',
       'All four transformations keep the order of the individuals: tournament selection, which only compares, would choose in the same way with any of them. With the roulette wheel, on the other hand, they share out the probabilities very differently. Choosing the fitness means choosing the selection pressure: too much leads to premature convergence and too little turns the search into a random walk (Talbi, 2009, §3.3.1). The selection tool in this series compares the roulette wheel, tournaments and ranking in more detail.',
-      'In a maximisation problem, such as the knapsack, the value already is a fitness if it cannot be negative. If it can (for example, after subtracting a penalty), a constant is added, F = u + C, with C the absolute value of the worst (Goldberg, 1989, p. 76).',
+      'In a maximisation problem, such as the knapsack, the value is already a fitness if it cannot be negative. If it can (for example, after subtracting a penalty), a constant is added, F = u + C, with C the absolute value of the worst (Goldberg, 1989, p. 76).',
     ],
   };
 
@@ -65,7 +65,7 @@
       o_first_neg: 'Individual 1: f = {f}, so F = −{f} = {F}.',
       o_first_cmax: 'Individual 1: f = {f}, so F = {C} − {f} = {F}.',
       o_first_inv: 'Individual 1: f = {f}, so F = 1/(1 + {f}) = {F}.',
-      o_first_rank: 'Individual 1: f = {f} holds rank {F} of {N} counting from the worst, so F = {F}.',
+      o_first_rank: 'Individual 1, with f = {f}, holds rank {F} of {N} counting from the worst, so F = {F}.',
       o_all_neg: 'Fitness of the whole population: the best, I{b}, has F = {Fb} and the worst, I{w}, F = {Fw}. The order is right, but the numbers are negative.',
       o_all_cmax: 'Fitness of the whole population: the best, I{b}, has F = {Fb} and the worst, I{w}, F = {Fw}.',
       o_all_inv: 'Fitness of the whole population: the best, I{b}, has F = {Fb} and the worst, I{w}, F = {Fw}.',
@@ -293,7 +293,7 @@ if (typeof module !== 'undefined' && module.exports) {
       docCmax: 'F = C − f with C the largest cost in the population (Goldberg, 1989): the worst gets 0.',
       docInv: 'F = 1 / (1 + f), for non-negative costs: always positive; depends on the scale of f.',
       docRank: 'F = rank: 1 the worst (largest cost), N the best; for equal costs, the average rank.',
-      worstFirst: 'from the worst to the best; ties, lower index first',
+      worstFirst: 'from the worst to the best; on ties, lower index first',
       docRoulette: 'Roulette-wheel probabilities, p = F / ΣF. Error if any fitness is negative or all are 0.',
       errNeg: 'negative fitness: the wheel cannot be built',
       errZero: 'every fitness is 0: the wheel cannot be built',
@@ -320,7 +320,7 @@ if (typeof module !== 'undefined' && module.exports) {
     }),
     C.ref('mitchell1998', {
       es: 'Manual introductorio. En el capítulo 5 resume la selección por rango de Baker: evita que unos pocos individuos muy buenos se lleven casi toda la descendencia y mantiene la presión cuando las aptitudes se parecen.',
-      en: 'Introductory textbook. Chapter 5 summarises Baker’s rank selection: it stops a few very fit individuals from taking almost all the offspring and keeps up the pressure when fitness values are alike.',
+      en: 'Introductory textbook. Chapter 5 summarises Baker’s rank-based selection: it stops a few very fit individuals from taking almost all the offspring and keeps up the pressure when fitness values are alike.',
     }),
     C.ref('goldbergDeb1991', {
       es: 'Análisis comparado de los esquemas de selección (proporcional, por rango y por torneo) a través de su presión selectiva y su tiempo de toma de control.',

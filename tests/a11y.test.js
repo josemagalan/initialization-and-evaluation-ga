@@ -77,6 +77,9 @@ test('la figura es una imagen si no tiene controles y un grupo si los tiene', ()
 test('la versión de «Acerca de» coincide con package.json y el README anuncia el estado', () => {
   assert.ok(pkg.version.startsWith(`${global.GAX.about.VERSION}.`), `${pkg.version} frente a ${global.GAX.about.VERSION}`);
   const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8');
-  assert.match(readme, /Status-in_development/);
-  assert.match(pkg.version, /dev/);
+  // Beta pública: la insignia del README, la versión 0.9.0-beta y el pie dicen lo mismo
+  assert.match(readme, /Status-public_beta/);
+  assert.match(pkg.version, /^0\.9\.\d+-beta$/);
+  for (const l of ['es', 'en']) assert.match(global.GAX.about.text[l].footBeta, /^beta \{v\}$/);
+  assert.match(readme, /## Accessibility/);
 });

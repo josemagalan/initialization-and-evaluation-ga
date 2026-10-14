@@ -39,3 +39,27 @@ test('las herramientas hermanas enlazan a la serie con el idioma', () => {
     assert.match(about.sisterUrl('en', k), new RegExp(`^https://josemagalan\\.github\\.io/${k}-ga/#lang=en$`));
   }
 });
+
+test('los textos en inglés no tienen comillas españolas, comas decimales ni palabras sueltas en español', () => {
+  const path = require('node:path');
+  const registry = require('../js/registry.js');
+  const out = [];
+  /** Recoge las cadenas de las ramas `en` de un objeto (y todo lo que cuelga de ellas). */
+  const collect = (o, inEn, where) => {
+    if (typeof o === 'string') { if (inEn) out.push([where, o]); return; }
+    if (!o || typeof o !== 'object') return;
+    for (const [k, v] of Object.entries(o)) collect(v, inEn || k === 'en', `${where}.${k}`);
+  };
+  collect({ en: i18n.dict.en }, false, 'i18n');
+  collect({ en: require('../js/practice-text.js').en }, false, 'practice');
+  collect({ en: about.text.en }, false, 'about');
+  collect(registry.families, false, 'registry');
+  for (const it of registry.allItems()) collect(require(path.join('..', 'js', 'content', `${it.id}.js`)), false, `content.${it.id}`);
+  assert.ok(out.length > 500, `${out.length} cadenas`);
+  for (const [where, s] of out) {
+    const text = s.replace(/<[^>]+>/g, ' ');
+    assert.doesNotMatch(text, /[«»]/, where);
+    assert.doesNotMatch(text, /\b\d+,(?!\d{3}\b)\d+\b/, `${where}: coma decimal en «${text.slice(0, 80)}»`);
+    assert.doesNotMatch(text, /\b(?:individuo|población|aptitud|mochila|cromosoma|también|según)\b/i, where);
+  }
+});

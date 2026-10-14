@@ -49,7 +49,7 @@
       typesHint: 'One box per element (gene, individual, distance, probability), with partial credit, marked as in practice mode. Numbers have the same tolerance as in practice mode.',
       all: 'Select all', none: 'None',
       levelsTitle: 'Difficulty levels',
-      levelsHint: 'Easy: small instances and populations (4 or 5 individuals, 5 items, 5 cities, 5 tasks × 2 machines, k = 3) and the most straightforward settings (C − f, linear penalty with λ = 1, Halton, nearest neighbour). Medium: somewhat larger, with 1/(1 + f), Sobol, other values of λ and more generations. Hard: the largest, with Rastrigin’s function, ranking, the quadratic penalty, the Latin hypercube and inverse distance weighting.',
+      levelsHint: 'Easy: small instances and populations (4 or 5 individuals, 5 items, 5 cities, 5 tasks × 2 machines, k = 3) and the most straightforward settings (C − f, linear penalty with λ = 1, Halton, nearest neighbour). Medium: somewhat larger, with 1/(1 + f), Sobol, other values of λ and more generations. Hard: the largest, with Rastrigin’s function, rank-based fitness, the quadratic penalty, the Latin hypercube and inverse distance weighting.',
       level: { easy: 'Easy', medium: 'Medium', hard: 'Hard' },
       sizeTitle: 'Size',
       count: 'Instances per category',

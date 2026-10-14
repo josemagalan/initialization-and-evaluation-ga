@@ -291,7 +291,7 @@
     prType_cache: 'Count evaluations',
     prType_neighbours: 'Neighbours and local optimum',
     prType_average: 'Average out the noise',
-    prType_predict: 'Estimate with the surrogate',
+    prType_predict: 'Estimate with the meta-model',
     prType_dominance: 'Dominance and fronts',
 
     prIntro_generate: 'Using the random numbers given, apply the uniform initialisation rule and write the chromosomes of the first two individuals.',
@@ -308,8 +308,8 @@
     prIntro_cache: 'Count the evaluations of the first two generations with and without a cache.',
     prIntro_neighbours: 'Evaluate the one-gene neighbours of individual 1 and decide whether it is a local optimum.',
     prIntro_average: 'Average the noisy evaluations and compare the ranking they give with that of the true fitness.',
-    prIntro_predict: 'Estimate the fitness of the candidates with the surrogate model, without evaluating them for real.',
-    prIntro_dominance: 'Sort the population into Pareto fronts and find the best individual of the weighted sum.',
+    prIntro_predict: 'Estimate the fitness of the candidates with the meta-model, without evaluating them for real.',
+    prIntro_dominance: 'Sort the population into Pareto fronts and find the best individual by the weighted sum.',
 
     prInd: 'I{i}',
     prCand: 'C{c}',
@@ -381,9 +381,9 @@
     prCopies: 'Expected copies after each generation',
     prTakeoverGen: 'First generation in which the expected copies reach N − 0.5 = {N} − 0.5',
 
-    prQuasiRule_halton: 'Halton in bases 2 and 3: individual i has u₁ = φ₂(i) and u₂ = φ₃(i), the radical inverse of i (write i in that base and mirror its digits behind the point). Then xⱼ = a + uⱼ (b − a) = {a} + uⱼ · {w}, rounded to two decimal places. Compute individuals i = {from}, …, {to} (write u to three decimal places).',
+    prQuasiRule_halton: 'Halton in bases 2 and 3: individual i has u₁ = φ₂(i) and u₂ = φ₃(i), the radical inverse of i (write i in that base and reverse its digits after the radix point). Then xⱼ = a + uⱼ (b − a) = {a} + uⱼ · {w}, rounded to two decimal places. Compute individuals i = {from}, …, {to} (write u to three decimal places).',
     prQuasiRule_sobol: 'Sobol (direct version): u₁ = φ₂(i), as in Halton; u₂ is the exclusive or (⊕, bitwise in binary) of the direction numbers vₖ of the bits of i that are 1 (bit 1 is the least significant). Then xⱼ = a + uⱼ (b − a) = {a} + uⱼ · {w}, rounded to two decimal places. Compute individuals i = {from}, …, {to} (write u to three decimal places).',
-    prQuasiRule_lhs: 'Latin hypercube: each axis is divided into N equal strata; individual i lies in stratum πⱼ(i) of axis j and uⱼ = (πⱼ(i) − 1 + vⱼ)/N. Then xⱼ = a + uⱼ (b − a) = {a} + uⱼ · {w}, rounded to two decimal places (if rounding took it out of its stratum, it moves 0.01 inwards). Compute individuals i = {from}, …, {to}.',
+    prQuasiRule_lhs: 'Latin hypercube: each axis is divided into N equal strata; individual i lies in stratum πⱼ(i) of axis j and uⱼ = (πⱼ(i) − 1 + vⱼ)/N. Then xⱼ = a + uⱼ (b − a) = {a} + uⱼ · {w}, rounded to two decimal places (if rounding took it out of its stratum, it is moved 0.01 inwards). Compute individuals i = {from}, …, {to}.',
     prSobolDirs: 'Direction numbers: {dirs}.',
     prLhsPerms: 'N = {N}; permutations of the strata: π₁ = ({p1}), π₂ = ({p2}).',
     prLhsV: 'Random numbers v within the stratum:',
@@ -422,7 +422,7 @@
     prTransform_cmax: 'Transformation: F = C − f, with C = max f in the population (the worst individual gets F = 0).',
     prTransform_inv: 'Transformation: F = 1/(1 + f) (write F to four decimal places).',
     prTransform_rank: 'Rank-based transformation: F = rank from the worst (1) to the best (N); individuals with equal f get the mean of the ranks they occupy.',
-    prRoulette: 'Roulette wheel: the probability of each individual is pᵢ = Fᵢ / Σ F (write it as a fraction of 1, to three decimal places).',
+    prRoulette: 'Roulette wheel: the probability of each individual is pᵢ = Fᵢ / Σ F (write it as a proportion between 0 and 1, to three decimal places).',
     prObjTable: 'Objective of each individual (minimised):',
     prC: 'Constant C',
     prProbs: 'Probability pᵢ of each individual',
@@ -459,7 +459,7 @@
     prNeighBest_min: 'Lowest fitness among the neighbours',
     prIsLocal: 'Is individual 1 a local optimum?',
 
-    prNoiseRule: 'Each evaluation returns F̃ = f + z, with z normal with mean 0 and standard deviation σ = {sigma}; each individual has been evaluated R = {R} times. It is minimised. A pair of individuals is misordered if the noisy evaluations rank them the other way round from f (pairs with equal f do not count).',
+    prNoiseRule: 'Each evaluation returns F̃ = f + z, with z normally distributed with mean 0 and standard deviation σ = {sigma}; each individual has been evaluated R = {R} times. It is minimised. A pair of individuals is misordered if the noisy evaluations rank them the other way round from f (pairs with equal f do not count).',
     prNoiseTable: 'True fitness f and noisy evaluations:',
     prMeans: 'Mean of the R evaluations of each individual',
     prBestSingle: 'Best individual according to the first evaluation',
@@ -467,7 +467,7 @@
     prDiscSingle: 'Pairs misordered by the first evaluation',
     prDiscMean: 'Pairs misordered by the mean',
 
-    prSurRule_nn: 'Nearest-neighbour surrogate: F̂(x) is the fitness of the archive individual nearest to x (Euclidean distance; ties: lowest number).',
+    prSurRule_nn: 'Nearest-neighbour meta-model: F̂(x) is the fitness of the archive individual nearest to x (Euclidean distance; ties: lowest number).',
     prSurRule_idw: 'Inverse squared distance weighting: F̂(x) = Σₖ wₖ Fₖ / Σₖ wₖ with wₖ = 1/dₖ², over the whole archive (dₖ, Euclidean distance from x to individual k).',
     prArchive: 'Archive: individuals already evaluated for real.',
     prCandPoints: 'The first {k} candidates:',
@@ -482,7 +482,7 @@
     'prObjA_assignment-int': 'Cmax',
     'prObjB_assignment-int': 'Total time',
     prFronts: 'Front of each individual',
-    prWeightedBest: 'Best individual of the weighted sum with w = {w} (its number)',
+    prWeightedBest: 'Best individual by the weighted sum with w = {w} (its number)',
   };
 
   const api = { es, en };
