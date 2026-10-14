@@ -39,7 +39,7 @@ It completes the series formed by [Representation](https://github.com/josemagala
 
 ## Status
 
-In development. The structure, the shared problem layer (taken from representation-ga) and the home page are in place; strategies and aspects will be switched on phase by phase and are shown as “coming soon” until then.
+In development. Available now: **uniform random initialisation** for the six encodings (gene by gene, with the random numbers shown, Fisher–Yates for permutations) and the **seeding counterexample** (a greedy solution copied into the population and its expected takeover under binary tournament selection), each with diversity and quality measures, a Learn more panel and downloadable Python and JavaScript code. The other strategies and aspects will be switched on phase by phase and are shown as “coming soon” until then.
 
 ## Running locally
 
@@ -47,11 +47,13 @@ Open `index.html` in any modern browser. No server or internet connection is nee
 
 ## Tests
 
-Requires Node.js 22 or later.
+Requires Node.js 22 or later; Python 3 is optional (it is used to test the downloadable Python code as well).
 
 ```
 npm test
 ```
+
+The tests check the shared problem layer against representation-ga, that every gene can be recomputed by hand from the random number shown, that the initialisation is uniform (bit, integer and real frequencies; the 120 permutations of five cities with a χ² test), the greedy heuristics on worked examples, the expected takeover against a simulation, the diversity measures against an independent computation, that every step has narration and highlights pseudocode lines that exist, and that the downloadable Python and JavaScript code gives exactly the same results as the tool.
 
 ## Project structure
 
@@ -60,6 +62,11 @@ npm test
 | `index.html`, `css/` | Page and styles |
 | `js/registry.js`, `js/home.js` | Catalogue of families, strategies and encodings; home screen |
 | `js/problems/`, `js/assignment.js`, `js/func.js`, `js/cities.js` | The four problems and six encodings of representation-ga: instances, decoding, evaluation and feasibility |
+| `js/space.js` | Common layer for populations: instances, quality, optimum, size of the search space, distances and diversity measures |
+| `js/items/` | Logic of each strategy or aspect: the population, the random numbers used and the step-by-step trace |
+| `js/content/` | Teaching content of each strategy or aspect: explanation, narration, pseudocode, downloadable code and references |
+| `js/viz/`, `js/ui/` | D3 view of a population; controls, narration and measures of each page |
+| `js/learn.js` | Learn more panel |
 | `js/about.js`, `js/app.js` | About page and footer, page controller |
 | `js/a11y.js` | Keyboard access to scrollable regions and the role of the main figure |
 | `js/i18n.js`, `js/rng.js` | Spanish and English texts; seeded random generator |

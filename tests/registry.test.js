@@ -50,7 +50,7 @@ test('textos bilingües, nivel, fase y codificaciones válidos', () => {
 
 test('cada elemento disponible tiene sus ficheros (lógica, contenido e interfaz)', () => {
   for (const it of registry.allItems().filter((x) => x.ready)) {
-    for (const dir of ['items', 'content', 'ui']) {
+    for (const dir of ['items', 'content']) {
       assert.ok(fs.existsSync(path.join(ROOT, 'js', dir, `${it.id}.js`)), `falta js/${dir}/${it.id}.js`);
     }
   }

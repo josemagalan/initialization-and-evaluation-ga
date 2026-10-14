@@ -44,6 +44,103 @@
       </p>
     </main>
 
+    <main id="itemView" hidden>
+      <header class="op-head">
+        <a class="back" href="#" id="backLink"><span aria-hidden="true">←</span> <span data-i18n="allItems">Inicialización y evaluación</span></a>
+        <p class="eyebrow" id="itemEyebrow"></p>
+        <h1 id="itemTitle"></h1>
+        <p class="subtitle" id="itemSubtitle"></p>
+      </header>
+
+      <section class="card controls" aria-labelledby="controls-title">
+        <h2 id="controls-title" class="sr-only" data-i18n="controlsTitle">Controles</h2>
+        <div id="itemControls"></div>
+      </section>
+
+      <section class="card stage">
+        <div class="stage-top">
+          <ol class="stage-strip" id="stageStrip" data-i18n-aria="stagesLabel" aria-label="Etapas"></ol>
+        </div>
+        <div class="viz-scroll" id="vizScroll">
+          <svg id="viz" role="img" aria-labelledby="vizLabel">
+            <title id="vizLabel"></title>
+          </svg>
+        </div>
+
+        <div class="player" id="playerBox">
+          <div class="player-buttons">
+            <button type="button" class="icon-btn" id="btnReset" data-i18n-title="reset" title="Inicio">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>
+            </button>
+            <button type="button" class="icon-btn" id="btnPrev" data-i18n-title="prev" title="Anterior">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17 5v14L6 12z"/></svg>
+            </button>
+            <button type="button" class="icon-btn play" id="btnPlay" data-i18n-title="play" title="Reproducir">
+              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l12-7z"/></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+            </button>
+            <button type="button" class="icon-btn" id="btnNext" data-i18n-title="next" title="Siguiente">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5v14l11-7z"/></svg>
+            </button>
+          </div>
+          <div class="progress">
+            <span id="stepCounter" class="counter">Paso 1 de 1</span>
+            <div class="bar"><div id="barFill" class="bar-fill"></div></div>
+          </div>
+          <div class="field speed">
+            <label for="speed" data-i18n="speed">Velocidad</label>
+            <input type="range" id="speed" min="0.5" max="2.5" step="0.25" value="1">
+            <output id="speedOut" for="speed">1×</output>
+          </div>
+        </div>
+        <div class="narration" id="narrationBox" aria-live="polite">
+          <p id="narration"></p>
+        </div>
+        <ul class="legend" id="legend"></ul>
+      </section>
+
+      <div id="itemExtra" class="enc-extra"></div>
+
+      <section class="card learn" aria-labelledby="learn-title">
+        <h2 id="learn-title" class="learn-title" data-i18n="learnTitle">Para saber más</h2>
+        <div class="tabs" role="tablist" aria-labelledby="learn-title">
+          <button type="button" role="tab" id="tab-explain" aria-controls="panel-explain" aria-selected="true" data-i18n="tabExplain">Explicación</button>
+          <button type="button" role="tab" id="tab-code" aria-controls="panel-code" aria-selected="false" tabindex="-1" data-i18n="tabCode">Pseudocódigo y código</button>
+          <button type="button" role="tab" id="tab-refs" aria-controls="panel-refs" aria-selected="false" tabindex="-1" data-i18n="tabRefs">Referencias</button>
+        </div>
+        <div role="tabpanel" id="panel-explain" aria-labelledby="tab-explain" class="panel" tabindex="0">
+          <div id="explainBody" class="prose"></div>
+        </div>
+        <div role="tabpanel" id="panel-code" aria-labelledby="tab-code" class="panel" hidden>
+          <div class="code-toolbar">
+            <div class="seg" role="group" data-i18n-aria="codeLang" aria-label="Lenguaje">
+              <button type="button" data-code="pseudo" aria-pressed="true" data-i18n="codePseudo">Pseudocódigo</button>
+              <button type="button" data-code="python" aria-pressed="false">Python</button>
+              <button type="button" data-code="javascript" aria-pressed="false">JavaScript</button>
+            </div>
+            <label id="syncWrap" class="sync">
+              <input type="checkbox" id="syncToggle" checked>
+              <span data-i18n="syncLabel">Resaltar el paso actual</span>
+            </label>
+            <div class="code-actions">
+              <span id="copyStatus" class="copy-status" role="status" aria-live="polite"></span>
+              <button type="button" id="btnCopy" class="btn" data-i18n="copyBtn">Copiar</button>
+              <button type="button" id="btnDownload" class="btn">Descargar</button>
+            </div>
+          </div>
+          <p id="codeHint" class="hint code-hint"></p>
+          <pre id="codeBlock" class="code" tabindex="0"></pre>
+        </div>
+        <div role="tabpanel" id="panel-refs" aria-labelledby="tab-refs" class="panel" hidden tabindex="0">
+          <p class="hint" data-i18n="refsIntro">Fuente original, referencias básicas del curso y lecturas recomendadas.</p>
+          <ol id="refList" class="refs"></ol>
+        </div>
+      </section>
+      <footer class="foot">
+        <p class="hint" data-i18n="keysHint">← → avanzar/retroceder · Espacio reproducir/pausa</p>
+      </footer>
+    </main>
+
     <main id="aboutView" hidden>
       <a class="back" href="#" id="aboutBack"><span aria-hidden="true">←</span> <span data-i18n="allItems">Inicialización y evaluación</span></a>
       <article class="card about" id="aboutBody"></article>
@@ -64,6 +161,16 @@
   <script src="js/problems/assignment-matrix.js"></script>
   <script src="js/problems/function-real.js"></script>
   <script src="js/problems/function-bits.js"></script>
+  <script src="js/space.js"></script>
+  <script src="js/items/uniform.js"></script>
+  <script src="js/items/seeded.js"></script>
+  <script src="js/content/common.js"></script>
+  <script src="js/content/uniform.js"></script>
+  <script src="js/content/seeded.js"></script>
+  <script src="js/viz/population-view.js"></script>
+  <script src="js/ui/controls.js"></script>
+  <script src="js/ui/population.js"></script>
+  <script src="js/learn.js"></script>
   <script src="js/about.js"></script>
   <script src="js/home.js"></script>
   <script src="js/a11y.js"></script>

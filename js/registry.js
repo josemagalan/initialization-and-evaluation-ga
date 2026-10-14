@@ -36,13 +36,13 @@
       },
       sample: ['1', '0', '1', '1', '0'],
       items: [
-        { id: 'uniform', level: 'B', phase: 1, ready: false, encodings: ALL,
+        { id: 'uniform', level: 'B', phase: 1, ready: true, encodings: ALL,
           name: { es: 'Aleatoria uniforme', en: 'Uniform random' },
           summary: {
             es: 'Cada gen se sortea de forma uniforme: un bit con probabilidad 0,5, un entero o un real en su rango, una permutación al azar.',
             en: 'Each gene is drawn uniformly: a bit with probability 0.5, an integer or a real within its range, a random permutation.',
           } },
-        { id: 'seeded', level: 'B', phase: 1, ready: false, encodings: ['knapsack-bits', 'assignment-int', 'tsp-perm'],
+        { id: 'seeded', level: 'B', phase: 1, ready: true, encodings: ['knapsack-bits', 'assignment-int', 'tsp-perm'],
           name: { es: 'Sembrar con una heurística (contraejemplo)', en: 'Seeding with a heuristic (counterexample)' },
           summary: {
             es: 'Qué pasa con la diversidad si la población parte de una solución voraz o de copias de ella.',

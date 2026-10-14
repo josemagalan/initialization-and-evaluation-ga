@@ -1357,3 +1357,70 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .badge-level.basic { background: #1f63b0; }
 .badge-level.advanced { background: #b3261e; }
 .badge-level.further { background: #1c1c1c; box-shadow: inset 0 0 0 1px var(--muted); }
+
+/* Vista de la población (js/viz/population-view.js) */
+.pv-title { font-size: 14px; font-weight: 700; fill: var(--ink); }
+.pv-sub { font-size: 11px; font-weight: 700; fill: var(--muted); }
+.pv-label { font-size: 14px; font-weight: 700; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.pv-row.current .pv-label { fill: var(--ink); }
+.pv-row.pending .pv-label { opacity: 0.7; }
+.pv-gene rect { fill: var(--card); stroke: var(--line); stroke-width: 1.5; }
+.pv-gene text { font-size: 13px; font-weight: 700; fill: var(--ink); font-variant-numeric: tabular-nums; }
+.pv-gene.one rect { fill: var(--p1); stroke: var(--p1); }
+.pv-gene.one text { fill: var(--p1-ink); }
+.pv-gene.val rect { fill: var(--card); stroke: var(--muted); }
+.pv-gene.empty rect { fill: none; stroke: var(--line); stroke-dasharray: 4 3; }
+.pv-gene.fixed rect { fill: color-mix(in srgb, var(--p1) 16%, var(--card)); }
+.pv-gene.active rect { stroke: var(--focus); stroke-width: 3; }
+.pv-row.current .pv-gene.val rect, .pv-row.current .pv-gene.zero rect { stroke: var(--ink); }
+.pv-swap { fill: none; stroke: var(--focus); stroke-width: 2; }
+.pv-q { font-size: 13px; font-weight: 700; fill: var(--ink); font-variant-numeric: tabular-nums; }
+.pv-q.infeasible { fill: var(--conflict-text); font-weight: 600; }
+.pv-axis { font-size: 12px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.pv-axisline { stroke: var(--line); stroke-width: 1.5; }
+.pv-min { fill: var(--ink); stroke: var(--card); stroke-width: 1; }
+.pv-pt circle { fill: var(--ink); stroke: var(--card); stroke-width: 2; }
+.pv-pt.current circle { fill: var(--p2); stroke: var(--ink); stroke-width: 2.5; }
+.pv-pt.infeasible circle { fill: var(--card); stroke: var(--conflict); stroke-width: 2.5; }
+.pv-pt.infeasible.current circle { fill: var(--p2); stroke: var(--conflict); }
+.pv-pt-label { font-size: 11px; font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: var(--card); stroke-width: 3px; }
+.pv-feasible-band { fill: var(--band); }
+.pv-cap { stroke: var(--conflict); stroke-width: 2; stroke-dasharray: 5 4; }
+.pv-opt { stroke: var(--wide); stroke-width: 2; stroke-dasharray: 6 4; }
+.pv-opt-label { fill: var(--ink); font-weight: 600; }
+.pv-mini-bg { fill: var(--bg); stroke: var(--line); stroke-width: 1; }
+.pv-mini.current .pv-mini-bg { stroke: var(--focus); stroke-width: 2.5; }
+.pv-route { fill: none; stroke: var(--p1); stroke-width: 1.8; stroke-linejoin: round; }
+.pv-mini.current .pv-route { stroke-width: 2.6; }
+.pv-city { fill: var(--ink); }
+.pv-mini-label { font-size: 11px; font-weight: 700; fill: var(--muted); }
+.pv-bar { fill: var(--p1); }
+.pv-barrow.current .pv-bar { fill: var(--p2); }
+.pv-bar.infeasible, .pv-barrow.current .pv-bar.infeasible { fill: none; stroke: var(--conflict); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.pv-bar-note { font-size: 12px; font-weight: 600; fill: var(--conflict-text); }
+.pv-dcell.diag { fill: var(--band); }
+.pv-dcell.zero { stroke: var(--conflict); stroke-width: 2; }
+.pv-dtext { font-size: 10px; font-weight: 600; fill: var(--ink); font-variant-numeric: tabular-nums; }
+.pv-dtext.light { fill: var(--p1-ink); }
+.sw-one { background: var(--p1); }
+.sw-zero, .sw-val { background: var(--card); border: 2px solid var(--muted); }
+.sw-active { background: var(--card); border: 3px solid var(--focus); }
+.sw-empty { background: transparent; border: 2px dashed var(--line); }
+
+/* Tarjeta de medidas */
+.measures { width: 100%; max-width: 640px; border-collapse: collapse; font-size: 0.95rem; }
+.measures th, .measures td { padding: 8px 10px; text-align: left; border-bottom: 1px solid var(--line); }
+.measures th { font-weight: 600; color: var(--muted); }
+.measures td { font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+#vizScroll #viz { width: auto; min-width: 0; max-width: none; height: auto; }
+.pv-seedmark { fill: var(--p2); }
+.pv-row.seed .pv-label { fill: var(--p2-text); }
+.pv-curve { fill: none; stroke: var(--p2); stroke-width: 2.5; }
+.pv-cdot { fill: var(--p2); stroke: var(--card); stroke-width: 2; }
+.pv-cdot.current { stroke: var(--ink); stroke-width: 2.5; }
+.sw-seed { background: var(--p2); }
+.measures thead th { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); text-align: right; }
+.measures thead th:first-child { text-align: left; }
+.pv-pt.seed circle { fill: var(--p2); stroke: var(--ink); }
+.pv-bar.seed { fill: var(--p2); }
+.pv-mini.seed .pv-route { stroke: var(--p2); stroke-width: 2.6; }
