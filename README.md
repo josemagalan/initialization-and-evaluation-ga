@@ -39,7 +39,7 @@ It completes the series formed by [Representation](https://github.com/josemagala
 
 ## Status
 
-In development, with the whole **Initialisation** family and the basic part of the **Evaluation** family available.
+In development, with both families complete: every **Initialisation** strategy and every **Evaluation** aspect. The practice exercises and the Moodle question banks are still to come.
 
 Initialisation:
 
@@ -57,7 +57,12 @@ Evaluation:
 - **Constraints as a penalty** for the knapsack and the assignment matrix: linear or quadratic penalty, the weight λ, the fitness of every individual as a function of λ and the critical weight λ* above which the best individual is feasible.
 - **The cost of evaluating**: the budget N · (G + 1), a minimal genetic algorithm that shows how many evaluations repeat, and how far a cache gets with the same budget.
 
-Each page has a Learn more panel with pseudocode synchronised with the animation and downloadable Python and JavaScript code. The advanced evaluation aspects (fitness landscape, noisy and approximate fitness, several objectives) will be switched on in the next phase and are shown as “coming soon” until then.
+- **Fitness landscape** for the six encodings: one-gene neighbours, steepest descent local search from each individual, basins and local optima (counted over the whole space when it is small) and the fitness-distance correlation over a uniform sample.
+- **Noisy fitness** for the function and the travelling salesman: one noisy evaluation, re-evaluation and the mean of R evaluations, pairs in the wrong order, the probability of getting the two best wrong and the cost.
+- **Approximate fitness** for the function: nearest-neighbour and inverse distance weighting meta-models built on the evaluated initial population, their error and rank correlation, and pre-selection of the candidates worth evaluating.
+- **Several objectives** for the knapsack (value and weight) and the assignment (makespan and total time): normalised weighted sum, Pareto dominance, non-dominated fronts, supported and unsupported solutions and, in small spaces, the true Pareto front.
+
+Each page has a Learn more panel with pseudocode synchronised with the animation and downloadable Python and JavaScript code.
 
 ## Running locally
 
@@ -71,7 +76,7 @@ Requires Node.js 22 or later; Python 3 is optional (it is used to test the downl
 npm test
 ```
 
-The tests check the shared problem layer against representation-ga, that every gene can be recomputed by hand from the random number shown, that the initialisation is uniform (bit, integer and real frequencies; the 120 permutations of five cities with a χ² test), the greedy heuristics on worked examples, the expected takeover against a simulation, the diversity measures against an independent computation, the net properties of the Halton and Sobol points (one point in every elementary box), one individual per stratum in every Latin hypercube, that sequential inhibition accepts a candidate if and only if it is at least δ from every accepted individual, that feasible initialisation always gives full knapsacks and one 1 per row, the comparison means against a replica-by-replica computation, the fitness of the six encodings against an independent computation and worked examples, that the four cost-to-fitness transformations keep the order and give valid roulette-wheel probabilities, that above the critical weight λ* the best individual is feasible and just below it is not, the evaluation counts with and without a cache against an independent recount, that every step has narration and highlights pseudocode lines that exist, and that the downloadable Python and JavaScript code gives exactly the same results as the tool.
+The tests check the shared problem layer against representation-ga, that every gene can be recomputed by hand from the random number shown, that the initialisation is uniform (bit, integer and real frequencies; the 120 permutations of five cities with a χ² test), the greedy heuristics on worked examples, the expected takeover against a simulation, the diversity measures against an independent computation, the net properties of the Halton and Sobol points (one point in every elementary box), one individual per stratum in every Latin hypercube, that sequential inhibition accepts a candidate if and only if it is at least δ from every accepted individual, that feasible initialisation always gives full knapsacks and one 1 per row, the comparison means against a replica-by-replica computation, the fitness of the six encodings against an independent computation and worked examples, that the four cost-to-fitness transformations keep the order and give valid roulette-wheel probabilities, that above the critical weight λ* the best individual is feasible and just below it is not, the evaluation counts with and without a cache against an independent recount, that local search improves at every step and ends in a local optimum, the number of local optima against an independent enumeration, the normal noise (mean and standard deviation), the meta-model estimates against their formulas, that every individual of a front is dominated by one of the previous front, the true Pareto front against an independent enumeration, that every step has narration and highlights pseudocode lines that exist, and that the downloadable Python and JavaScript code gives exactly the same results as the tool.
 
 ## Project structure
 
@@ -85,7 +90,7 @@ The tests check the shared problem layer against representation-ga, that every g
 | `js/items/` | Logic of each strategy or aspect: the population, the random numbers used and the step-by-step trace |
 | `js/compare.js`, `js/ui/compare-page.js` | Comparison of the initialisation strategies over 1000 replicas: logic and page |
 | `js/content/` | Teaching content of each strategy or aspect: explanation, narration, pseudocode, downloadable code and references |
-| `js/viz/`, `js/ui/` | D3 view of a population; controls, narration and measures of each page (`population.js` for the basic strategies, `init-items.js` for the advanced ones, `eval-items.js` for the evaluation aspects) |
+| `js/viz/`, `js/ui/` | D3 view of a population and the panels of the advanced evaluation (`eval-panels.js`); controls, narration and measures of each page (`population.js` for the basic strategies, `init-items.js` for the advanced ones, `eval-items.js` and `eval-advanced.js` for the evaluation aspects) |
 | `js/learn.js` | Learn more panel |
 | `js/about.js`, `js/app.js` | About page and footer, page controller |
 | `js/a11y.js` | Keyboard access to scrollable regions and the role of the main figure |

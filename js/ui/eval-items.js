@@ -482,7 +482,7 @@
           return { key: e.violation ? `p_best_bad_${suf}` : 'p_best_ok', params: p };
         }
         case 'p_lambda': {
-          if (!m.lambdaStar) return { key: 'p_lambda_nofeas', params: { a: m.bestAtMin + 1, b: m.bestAtMax + 1, max: h.fmt(m.lambdaRange.max) } };
+          if (!m.lambdaStar) return { key: m.bestAtMin === m.bestAtMax ? 'p_lambda_nofeas_same' : 'p_lambda_nofeas', params: { a: m.bestAtMin + 1, b: m.bestAtMax + 1, max: h.fmt(m.lambdaRange.max) } };
           const s = m.lambdaStar.lambda;
           if (s === 0) return { key: 'p_lambda_zero', params: { l } };
           const key = s > m.lambdaRange.max ? 'p_lambda_beyond' : m.lambda > s ? 'p_lambda_above' : 'p_lambda_below';

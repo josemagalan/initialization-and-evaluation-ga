@@ -1516,3 +1516,76 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .sw-cost-no { width: 26px; height: 3px; border-radius: 0; background: repeating-linear-gradient(90deg, var(--muted) 0 6px, transparent 6px 10px); }
 .sw-cost-cache { width: 26px; height: 4px; border-radius: 2px; background: var(--p1); }
 .sw-budget { width: 26px; height: 3px; border-radius: 0; background: repeating-linear-gradient(90deg, var(--conflict) 0 5px, transparent 5px 9px); }
+
+/* Fase 4: evaluación avanzada */
+.pv-stem { stroke: var(--muted); stroke-width: 1.5; }
+.pv-stem.better { stroke: var(--wide); }
+.pv-nb { fill: var(--card); stroke: var(--muted); stroke-width: 2; }
+.pv-nb.better { fill: var(--wide); stroke: var(--card); stroke-width: 1.5; }
+.pv-nb.best { fill: var(--p2); stroke: var(--ink); stroke-width: 2; }
+.pv-nb-label { font-size: 10px; }
+.pv-cutline { fill: none; stroke: var(--p1); stroke-width: 2; }
+.pv-cutpt { fill: var(--p2); stroke: var(--ink); stroke-width: 2; }
+.pv-climb { fill: none; stroke: var(--ink); stroke-width: 1.6; opacity: 0.7; }
+.pv-climb.current { stroke: var(--p2); stroke-width: 3; opacity: 1; }
+.pv-climb.ok { stroke: var(--wide); opacity: 0.9; stroke-width: 2; }
+.pv-climb.local { stroke: var(--conflict); opacity: 0.85; stroke-width: 2; }
+.pv-climbpt { fill: var(--ink); stroke: var(--card); stroke-width: 1.5; }
+.pv-climbpt.start { fill: var(--card); stroke: var(--ink); stroke-width: 2; }
+.pv-climbpt.end { fill: var(--conflict); stroke: var(--card); stroke-width: 1.5; }
+.pv-climbpt.end.ok { fill: var(--wide); }
+.pv-dumb { stroke: var(--conflict); stroke-width: 2; }
+.pv-dumb.ok { stroke: var(--wide); }
+.pv-sample { fill: var(--muted); opacity: 0.35; }
+.pv-fdcpt { fill: var(--ink); stroke: var(--card); stroke-width: 1.5; }
+.pv-fdcpt.current { fill: var(--p2); stroke: var(--ink); }
+.pv-ci { stroke: var(--p1); stroke-width: 3; opacity: 0.45; stroke-linecap: round; }
+.pv-rep { fill: none; stroke: var(--p2-text); stroke-width: 1.5; }
+.pv-truetick { stroke: var(--ink); stroke-width: 3; }
+.pv-single { fill: var(--p2); stroke: var(--ink); stroke-width: 1; }
+.pv-mean { fill: var(--p1); stroke: var(--card); stroke-width: 1.5; }
+.pv-slink { stroke: var(--p2-text); stroke-width: 1.2; opacity: 0.6; }
+.pv-slink.strong { stroke-width: 2.5; opacity: 1; }
+.pv-arch { fill: var(--ink); stroke: var(--card); stroke-width: 1.5; }
+.pv-cand-pt { fill: var(--card); stroke: var(--p1); stroke-width: 2; }
+.pv-cand-pt.pre { fill: var(--p1); stroke: var(--card); }
+.pv-cand-pt.current { fill: var(--p2); stroke: var(--ink); }
+.pv-truebest { fill: none; stroke: var(--wide); stroke-width: 3; }
+.pv-diag { stroke: var(--muted); stroke-width: 1.5; stroke-dasharray: 5 4; }
+.pv-preband { fill: color-mix(in srgb, var(--p1) 10%, transparent); }
+.pv-cone.better { fill: color-mix(in srgb, var(--wide) 16%, transparent); }
+.pv-cone.worse { fill: color-mix(in srgb, var(--conflict) 12%, transparent); }
+.pv-truefront { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 2 3; }
+.pv-truefront-pt { fill: var(--muted); }
+.pv-front { fill: none; stroke: var(--p1); stroke-width: 2.5; }
+.pv-iso { stroke: var(--p2-text); stroke-width: 2; stroke-dasharray: 7 4; }
+.pv-objpt { fill: var(--card); stroke: var(--ink); stroke-width: 2; }
+.pv-objpt.f1 { fill: var(--p1); stroke: var(--card); stroke-width: 1.5; }
+.pv-objpt.fk { fill: var(--card); stroke: var(--muted); }
+.pv-objpt.dom-by { fill: var(--wide); stroke: var(--card); }
+.pv-objpt.doms { fill: var(--conflict); stroke: var(--card); }
+.pv-objpt.current { fill: var(--p2); stroke: var(--ink); stroke-width: 2.5; }
+.pv-sup { fill: none; stroke: var(--wide); stroke-width: 2.5; }
+.pv-sup.no { stroke: var(--conflict); stroke-dasharray: 4 3; }
+.sw-nb-better { border-radius: 50%; background: var(--wide); }
+.sw-nb-worse { border-radius: 50%; background: var(--card); border: 2px solid var(--muted); }
+.sw-climb { width: 26px; height: 4px; border-radius: 2px; background: var(--p2); }
+.sw-end-ok { border-radius: 50%; background: var(--wide); }
+.sw-sample { border-radius: 50%; width: 10px; height: 10px; margin: 5px; background: var(--muted); opacity: 0.5; }
+.sw-truetick { width: 4px; border-radius: 0; background: var(--ink); }
+.sw-single { background: var(--p2); transform: rotate(45deg) scale(0.7); border-radius: 2px; }
+.sw-rep { border-radius: 50%; background: transparent; border: 2px solid var(--p2-text); }
+.sw-mean { border-radius: 50%; background: var(--p1); }
+.sw-ci { width: 26px; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--p1) 45%, transparent); }
+.sw-arch { border-radius: 50%; background: var(--ink); }
+.sw-candpt { background: var(--card); border: 2px solid var(--p1); transform: rotate(45deg) scale(0.75); border-radius: 2px; }
+.sw-pre { background: var(--p1); transform: rotate(45deg) scale(0.75); border-radius: 2px; }
+.sw-truebest { border-radius: 50%; background: transparent; border: 3px solid var(--wide); }
+.sw-objpt-f1 { border-radius: 50%; background: var(--p1); }
+.sw-objpt { border-radius: 50%; background: var(--card); border: 2px solid var(--muted); }
+.sw-iso { width: 26px; height: 3px; border-radius: 0; background: repeating-linear-gradient(90deg, var(--p2-text) 0 7px, transparent 7px 11px); }
+.sw-cone-better { background: color-mix(in srgb, var(--wide) 30%, var(--card)); }
+.sw-cone-worse { background: color-mix(in srgb, var(--conflict) 25%, var(--card)); }
+.sw-sup { border-radius: 50%; background: transparent; border: 3px solid var(--wide); }
+.sw-unsup { border-radius: 50%; background: transparent; border: 3px dashed var(--conflict); }
+.sw-truefront { width: 26px; height: 3px; border-radius: 0; background: repeating-linear-gradient(90deg, var(--muted) 0 2px, transparent 2px 5px); }

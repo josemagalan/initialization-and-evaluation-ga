@@ -147,7 +147,7 @@
           .attr('class', `pv-row${i === step.ind ? ' current' : ''}${!complete && !building ? ' pending' : ''}${isSeed && complete ? ' seed' : ''}${extra ? ` ${extra}` : ''}`)
           .attr('transform', `translate(0,${TOP + i * ROW})`);
         if (isSeed && complete) row.append('rect').attr('class', 'pv-seedmark').attr('x', 2).attr('y', 4).attr('width', 5).attr('height', ROW - 8).attr('rx', 2);
-        row.append('text').attr('class', 'pv-label').attr('x', LABEL - 10).attr('y', ROW / 2 + 5).attr('text-anchor', 'end').text(`I${i + 1}`);
+        row.append('text').attr('class', 'pv-label').attr('x', LABEL - 10).attr('y', ROW / 2 + 5).attr('text-anchor', 'end').text(model.rowLabel ? model.rowLabel(i, step) : `I${i + 1}`);
         let genes = null;
         let known = 0;
         if (complete) { genes = model.pop[i]; known = sh.length; } else if (building && partial) {
@@ -247,10 +247,9 @@
       return contours.polys;
     }
 
-    function drawFunction(step, model, L) {
-      const inst = model.inst;
+    /** Mapa de curvas de nivel de la función con sus mínimos globales: devuelve las escalas { sx, sy, F }. */
+    function fnBase(g, inst) {
       const F = Fn.fnOf(inst.fn);
-      const g = panelFrame(L, 'pvMapTitle');
       const sx = d3.scaleLinear().domain([F.a, F.b]).range([0, PANEL]);
       const sy = d3.scaleLinear().domain([F.a, F.b]).range([PANEL, 0]);
       const polys = contourPolys(inst.fn);
@@ -260,6 +259,16 @@
       g.append('rect').attr('class', 'fbox').attr('width', PANEL).attr('height', PANEL);
       F.minima.forEach((m) => g.append('path').attr('class', 'pv-min')
         .attr('d', d3.symbol(d3.symbolCross, 80)()).attr('transform', `translate(${sx(m[0])},${sy(m[1])}) rotate(45)`));
+      g.append('text').attr('class', 'pv-axis').attr('x', 0).attr('y', PANEL + 16).text(fmt(F.a));
+      g.append('text').attr('class', 'pv-axis').attr('x', PANEL).attr('y', PANEL + 16).attr('text-anchor', 'end').text(fmt(F.b));
+      g.append('text').attr('class', 'pv-axis').attr('x', PANEL / 2).attr('y', PANEL + 16).attr('text-anchor', 'middle').text(t('pvMinima'));
+      return { sx, sy, F };
+    }
+
+    function drawFunction(step, model, L) {
+      const inst = model.inst;
+      const g = panelFrame(L, 'pvMapTitle');
+      const { sx, sy, F } = fnBase(g, inst);
       const N = model.pop.length;
       if (step.grid === 'strata') {
         for (let k = 1; k < N; k++) {
@@ -302,9 +311,6 @@
         .attr('transform', (d) => `translate(${sx(d.p[0])},${sy(d.p[1])})`);
       dots.append('circle').attr('r', (d) => (d.i === step.ind ? 7 : 5));
       dots.filter((d) => model.pop.length <= 12 || d.i === step.ind).append('text').attr('class', 'pv-pt-label').attr('x', 8).attr('y', -6).text((d) => `I${d.i + 1}`);
-      g.append('text').attr('class', 'pv-axis').attr('x', 0).attr('y', PANEL + 16).text(fmt(F.a));
-      g.append('text').attr('class', 'pv-axis').attr('x', PANEL).attr('y', PANEL + 16).attr('text-anchor', 'end').text(fmt(F.b));
-      g.append('text').attr('class', 'pv-axis').attr('x', PANEL / 2).attr('y', PANEL + 16).attr('text-anchor', 'middle').text(t('pvMinima'));
     }
 
     function drawTsp(step, model, L) {
@@ -643,6 +649,9 @@
       h.append('line').attr('class', 'pv-hatch-line').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', 7);
     }
 
+    /** Lo que necesitan los paneles definidos en otros ficheros (js/viz/eval-panels.js). */
+    const panelApi = { PANEL, ROW, TOP, t, fmt, fmtFixed, panelFrame, fnBase, shownIdx, visible, svg };
+
     function show(step, model, width) {
       // Página del coste: la generación que se ve sustituye a la población
       if (step.gen != null && model.gens) model = Object.assign({}, model, model.gens[step.gen]);
@@ -657,6 +666,7 @@
       else if (step.show === 'shares') drawShares(step, model, L);
       else if (step.show === 'lambda') drawLambda(step, model, L);
       else if (step.show === 'cost') drawCost(step, model, L);
+      else if (root.GAX.pvPanels && root.GAX.pvPanels[step.show]) root.GAX.pvPanels[step.show](panelApi, step, model, L);
       else if ((step.show === 'penalty' || model.penaltyPanel) && model.enc === 'knapsack-bits') drawPenaltyKnapsack(step, model, L);
       else if ((step.show === 'penalty' || model.penaltyPanel) && model.enc === 'assignment-matrix') drawPenaltyMatrix(step, model, L);
       else if (model.enc === 'function-real' || model.enc === 'function-bits') drawFunction(step, model, L);

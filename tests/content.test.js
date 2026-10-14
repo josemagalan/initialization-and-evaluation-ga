@@ -541,3 +541,166 @@ print(json.dumps(out))
     assert.deepEqual(ex.slice(0, 2), ['2 2', '[(2, 2, 2), (1, 4, 3), (0, 6, 3)]']);
   }
 });
+
+// ---------- Fase 4: evaluación avanzada ----------
+
+test('evaluación avanzada: narración y pseudocódigo de cada paso de las cuatro páginas', () => {
+  const L = require('../js/items/landscape.js');
+  const Nz = require('../js/items/noise.js');
+  const Sg = require('../js/items/surrogate.js');
+  const M = require('../js/items/multi.js');
+  checkSteps('landscape', S.ENCODINGS.map((enc) => ({ variant: enc, steps: L.run(enc, S.instance(enc, 1), 6, 2).steps })));
+  checkSteps('noise', Nz.ENCODINGS.map((enc) => ({ variant: undefined, steps: Nz.run(enc, S.instance(enc, 1), 6, 2, {}).steps })));
+  checkSteps('surrogate', Sg.METHODS.flatMap((m) => Sg.ENCODINGS.map((enc) => ({ variant: m, steps: Sg.run(enc, S.instance(enc, 1), 6, 2, { method: m }).steps }))));
+  checkSteps('multi', M.ENCODINGS.map((enc) => ({ variant: undefined, steps: M.run(enc, S.instance(enc, 1), 6, 2, {}).steps })));
+});
+
+test('paisaje (JavaScript y Python): mismas búsquedas locales y misma FDC que la herramienta', () => {
+  const L = require('../js/items/landscape.js');
+  const F = require('../js/fitness.js');
+  const U = require('../js/items/uniform.js');
+  const cases = [];
+  for (const enc of ['knapsack-bits', 'assignment-int', 'assignment-matrix', 'tsp-perm', 'function-bits']) {
+    for (let s = 0; s < 6; s++) {
+      const inst = S.instance(enc, s);
+      const sh = S.shape(enc, inst);
+      const pop = U.population(enc, inst, 3, s).pop;
+      // tabla de aptitudes de todos los cromosomas que puede visitar la búsqueda (los de sus caminos y sus vecinos)
+      const table = {};
+      const paths = pop.map((x) => L.localSearch(enc, inst, x).map((st) => st.x));
+      paths.flat().forEach((x) => [x].concat(L.neighbours(enc, inst, x).map((n) => n.x)).forEach((y) => { table[y.join(',')] = F.evaluate(enc, inst, y).fitness; }));
+      const fd = L.fdc(enc, inst, U.population(enc, inst, 40, s).pop, L.optimalSet(enc, inst));
+      cases.push({ enc, kind: sh.kind, m: sh.m, pop, paths, table, max: S.sense(enc) === 'max', fits: fd.points.map((p) => p.fit), ds: fd.points.map((p) => p.d), r: fd.r });
+    }
+  }
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('landscape').getCode('javascript', l));
+    cases.forEach((c, i) => {
+      const nbs = c.kind === 'perm' ? code.swapNeighbours : c.kind === 'int' ? (x) => code.machineNeighbours(x, c.m) : code.bitFlipNeighbours;
+      c.pop.forEach((x, k) => assert.deepEqual(code.localSearch(x, (y) => c.table[y.join(',')], nbs, c.max), c.paths[k], `${c.enc} ${i}.${k}`));
+      const r = code.fitnessDistanceCorrelation(c.fits, c.ds, c.max);
+      assert.ok(c.r == null ? r == null : Math.abs(r - c.r) < 1e-12);
+    });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('landscape', 'fitness_landscape.py', l, `
+out = []
+for c in cases:
+    t = c["table"]; f = lambda y: t[",".join(str(v) for v in y)]
+    if c["kind"] == "perm": nb = swap_neighbours
+    elif c["kind"] == "int": nb = lambda x, c=c: machine_neighbours(x, c["m"])
+    else: nb = bit_flip_neighbours
+    out.append([[local_search(x, f, nb, c["max"]) for x in c["pop"]], fitness_distance_correlation(c["fits"], c["ds"], c["max"])])
+print(json.dumps(out))
+`, cases);
+    res.forEach(([paths, r], i) => {
+      assert.deepEqual(paths, cases[i].paths, `${l}: caso ${i}`);
+      assert.ok(cases[i].r == null ? r == null : Math.abs(r - cases[i].r) < 1e-12);
+    });
+    assert.deepEqual(ex.slice(0, 3), ['[[0, 1, 0], [1, 1, 0], [1, 1, 1]]', '6', '1.0']);
+  }
+});
+
+test('ruido (JavaScript y Python): mismo ruido, mismas medias y misma probabilidad de equivocarse', () => {
+  const Nz = require('../js/items/noise.js');
+  const cases = [];
+  for (const enc of Nz.ENCODINGS) {
+    for (let s = 0; s < 8; s++) {
+      const r = Nz.run(enc, S.instance(enc, s), 8, s, { R: 1 + (s % 5) });
+      const next = Nz.stream(s);
+      const us = Array.from({ length: 2 * 8 * r.R }, () => next());
+      cases.push({ f: r.f, sigma: r.sigma, R: r.R, us, means: r.means, single: r.single, disc: r.discSingle, gap: r.gap, p: r.pWrongR });
+    }
+  }
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('noise').getCode('javascript', l));
+    cases.forEach((c, i) => {
+      const us = c.us.slice();
+      const means = c.f.map((fi) => code.noisyMean(fi, c.sigma, c.R, () => us.shift()));
+      means.forEach((m, k) => assert.ok(Math.abs(m - c.means[k]) < 1e-9, `caso ${i}.${k}`));
+      assert.equal(code.discordantPairs(c.f, c.single), c.disc);
+      if (c.sigma > 0) assert.ok(Math.abs(code.probabilityOfError(c.gap, c.sigma, c.R) - c.p) < 1e-12);
+    });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('noise', 'noisy_fitness.py', l, `
+out = []
+for c in cases:
+    it = iter(c["us"]); rand = lambda: next(it)
+    means = [noisy_mean(f, c["sigma"], c["R"], rand) for f in c["f"]]
+    out.append([means, discordant_pairs(c["f"], c["single"]), probability_of_error(c["gap"], c["sigma"], c["R"]) if c["sigma"] > 0 else None])
+print(json.dumps(out))
+`, cases);
+    res.forEach(([means, d, p], i) => {
+      means.forEach((m, k) => assert.ok(Math.abs(m - cases[i].means[k]) < 1e-9, `${l}: caso ${i}.${k}`));
+      assert.equal(d, cases[i].disc);
+      if (p != null) assert.ok(Math.abs(p - cases[i].p) < 1e-6, 'Φ exacta frente a la aproximación de la herramienta');
+    });
+    assert.deepEqual(ex.slice(0, 3), ['11.77', '2', '0.444']);
+  }
+});
+
+test('aptitud aproximada (JavaScript y Python): mismas estimaciones, preselección y ρ que la herramienta', () => {
+  const Sg = require('../js/items/surrogate.js');
+  const cases = [];
+  for (const enc of Sg.ENCODINGS) {
+    for (let s = 0; s < 8; s++) {
+      for (const method of Sg.METHODS) {
+        const inst = S.instance(enc, s);
+        const r = Sg.run(enc, inst, 8, s, { method });
+        cases.push({ method, pts: r.archive.map((a) => a.p), fits: r.archive.map((a) => a.fit), cands: r.cands.map((x) => S.point(enc, inst, x)), pred: r.pred, truth: r.truth, pre: r.preselected, K: r.K, rho: r.rho });
+      }
+    }
+  }
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('surrogate').getCode('javascript', l));
+    cases.forEach((c, i) => {
+      const f = c.method === 'nn' ? code.nearestNeighbour : code.inverseDistance;
+      assert.deepEqual(c.cands.map((p) => f(c.pts, c.fits, p)), c.pred, `caso ${i}`);
+      assert.deepEqual(code.preselect(c.pred, c.K), c.pre);
+      assert.equal(code.spearman(c.pred, c.truth), c.rho);
+    });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('surrogate', 'surrogate_fitness.py', l, `
+out = []
+for c in cases:
+    f = nearest_neighbour if c["method"] == "nn" else inverse_distance
+    pred = [f(c["pts"], c["fits"], p) for p in c["cands"]]
+    out.append([pred, preselect(pred, c["K"]), spearman(pred, c["truth"])])
+print(json.dumps(out))
+`, cases);
+    res.forEach(([pred, pre, rho], i) => {
+      pred.forEach((v, k) => assert.ok(Math.abs(v - cases[i].pred[k]) < 1e-9 * Math.max(1, Math.abs(v)), `${l}: caso ${i}.${k}`));
+      assert.deepEqual(pre, cases[i].pre);
+      if (cases[i].rho == null) assert.equal(rho, null); else assert.ok(Math.abs(rho - cases[i].rho) < 1e-12);
+    });
+    assert.deepEqual(ex.slice(0, 4), ['10', '15.0', '[3, 1]', '0.5']);
+  }
+});
+
+test('varios objetivos (JavaScript y Python): misma dominancia, frentes y suma ponderada que la herramienta', () => {
+  const M = require('../js/items/multi.js');
+  const cases = [];
+  for (const enc of M.ENCODINGS) {
+    for (let s = 0; s < 10; s++) {
+      const w = (s % 5) / 4;
+      const r = M.run(enc, S.instance(enc, s), 12, s, { w });
+      cases.push({ o: r.o, rank: r.rank, w: r.w, scores: r.scores });
+    }
+  }
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('multi').getCode('javascript', l));
+    cases.forEach((c, i) => {
+      assert.deepEqual(code.nondominatedFronts(c.o), c.rank, `caso ${i}`);
+      assert.deepEqual(code.weightedSum(c.o, c.w), c.scores);
+    });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('multi', 'multiobjective_fitness.py', l, `
+out = [[nondominated_fronts(c["o"]), weighted_sum(c["o"], c["w"])] for c in cases]
+print(json.dumps(out))
+`, cases);
+    res.forEach(([rank, sc], i) => {
+      assert.deepEqual(rank, cases[i].rank, `${l}: caso ${i}`);
+      sc.forEach((v, k) => assert.ok(Math.abs(v - cases[i].scores[k]) < 1e-12));
+    });
+    assert.deepEqual(ex.slice(0, 3), ['True', '[1, 1, 1, 2, 3]', '[0.5, 0.25, 0.5, 0.625, 0.75]']);
+  }
+});

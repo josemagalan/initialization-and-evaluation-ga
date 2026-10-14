@@ -500,6 +500,70 @@
     },
   });
 
+  // Fase 4: evaluación avanzada (cotejar; ver la FTD)
+  Object.assign(refs, {
+    wright1932: {
+      id: 'wright-1932',
+      type: 'inproceedings',
+      authors: 'Wright, S.',
+      year: '1932',
+      title: 'The roles of mutation, inbreeding, crossbreeding, and selection in evolution',
+      container: 'Proceedings of the Sixth International Congress of Genetics',
+      details: { es: '(D. F. Jones, ed., pp. 356–366)', en: '(D. F. Jones, Ed., pp. 356–366)' },
+      url: null,
+    },
+    jonesForrest1995: {
+      id: 'jones-forrest-1995',
+      type: 'inproceedings',
+      authors: 'Jones, T., & Forrest, S.',
+      year: '1995',
+      title: 'Fitness distance correlation as a measure of problem difficulty for genetic algorithms',
+      container: 'Proceedings of the Sixth International Conference on Genetic Algorithms',
+      details: { es: '(pp. 184–192). Morgan Kaufmann', en: '(pp. 184–192). Morgan Kaufmann' },
+      url: null,
+    },
+    fitzpatrick1988: {
+      id: 'fitzpatrick-grefenstette-1988',
+      type: 'article',
+      authors: 'Fitzpatrick, J. M., & Grefenstette, J. J.',
+      year: '1988',
+      title: 'Genetic algorithms in noisy environments',
+      container: 'Machine Learning',
+      details: { es: '3, 101–120', en: '3, 101–120' },
+      url: 'https://doi.org/10.1007/BF00113893',
+    },
+    jinBranke2005: {
+      id: 'jin-branke-2005',
+      type: 'article',
+      authors: 'Jin, Y., & Branke, J.',
+      year: '2005',
+      title: 'Evolutionary optimization in uncertain environments—a survey',
+      container: 'IEEE Transactions on Evolutionary Computation',
+      details: { es: '9(3), 303–317', en: '9(3), 303–317' },
+      url: null,
+    },
+    jin2005: {
+      id: 'jin-2005',
+      type: 'article',
+      authors: 'Jin, Y.',
+      year: '2005',
+      title: 'A comprehensive survey of fitness approximation in evolutionary computation',
+      container: 'Soft Computing',
+      details: { es: '9(1), 3–12', en: '9(1), 3–12' },
+      url: 'https://doi.org/10.1007/s00500-003-0328-5',
+    },
+    shepard1968: {
+      id: 'shepard-1968',
+      type: 'inproceedings',
+      authors: 'Shepard, D.',
+      year: '1968',
+      title: 'A two-dimensional interpolation function for irregularly-spaced data',
+      container: 'Proceedings of the 1968 23rd ACM National Conference',
+      details: { es: '(pp. 517–524). ACM', en: '(pp. 517–524). ACM' },
+      url: 'https://doi.org/10.1145/800186.810616',
+    },
+  });
+
   /*
    * Formalización común de la función continua: filas cuyo MathML depende de la función elegida
    * (math(lang, fn)). Las codificaciones solo cambian la fila del espacio de búsqueda.
