@@ -32,14 +32,23 @@ It completes the series formed by [Representation](https://github.com/josemagala
 | Family | Strategy or aspect | Level |
 | --- | --- | --- |
 | Initialisation | Uniform random (all six encodings) · seeding with a heuristic as a counterexample | Basic |
-| | Quasi-random (Halton, Sobol) and Latin hypercube · simple sequential inhibition · feasible initialisation | Advanced |
+| | Quasi-random (Halton, Sobol) and Latin hypercube · simple sequential inhibition · feasible initialisation · comparison of every strategy over 1000 replicas | Advanced |
 | Evaluation | From genotype to fitness · objective versus fitness · constraints as a penalty · the cost of evaluating | Basic |
 | | Fitness landscape · noisy fitness | Advanced |
 | | Approximate fitness · several objectives | Further reading |
 
 ## Status
 
-In development. Available now: **uniform random initialisation** for the six encodings (gene by gene, with the random numbers shown, Fisher–Yates for permutations) and the **seeding counterexample** (a greedy solution copied into the population and its expected takeover under binary tournament selection), each with diversity and quality measures, a Learn more panel and downloadable Python and JavaScript code. The other strategies and aspects will be switched on phase by phase and are shown as “coming soon” until then.
+In development. Available now, for the whole **Initialisation** family:
+
+- **Uniform random initialisation** for the six encodings (gene by gene, with the random numbers shown, Fisher–Yates for permutations).
+- The **seeding counterexample**: a greedy solution copied K times into the population and its expected takeover under binary tournament selection.
+- **Quasi-random and Latin hypercube initialisation** for the continuous function: Halton and Sobol sequences, worked out digit by digit, and Latin hypercube sampling, compared with the uniform population for the largest gap, the occupied strips of each axis and the minimum distance.
+- **Sequential diversification** (simple sequential inhibition) for the six encodings: candidates are accepted only if they lie at least δ from every individual already in the population, with its cost in candidates.
+- **Feasible initialisation**: full knapsacks from a random order and one 1 per row in the assignment matrix.
+- **Compare strategies**: every strategy that supports the chosen encoding, 1000 populations each on the same instance, with the means of diversity, feasibility, initial quality, coverage and cost.
+
+Each strategy has diversity and quality measures, a Learn more panel and downloadable Python and JavaScript code. The evaluation aspects will be switched on phase by phase and are shown as “coming soon” until then.
 
 ## Running locally
 
@@ -53,7 +62,7 @@ Requires Node.js 22 or later; Python 3 is optional (it is used to test the downl
 npm test
 ```
 
-The tests check the shared problem layer against representation-ga, that every gene can be recomputed by hand from the random number shown, that the initialisation is uniform (bit, integer and real frequencies; the 120 permutations of five cities with a χ² test), the greedy heuristics on worked examples, the expected takeover against a simulation, the diversity measures against an independent computation, that every step has narration and highlights pseudocode lines that exist, and that the downloadable Python and JavaScript code gives exactly the same results as the tool.
+The tests check the shared problem layer against representation-ga, that every gene can be recomputed by hand from the random number shown, that the initialisation is uniform (bit, integer and real frequencies; the 120 permutations of five cities with a χ² test), the greedy heuristics on worked examples, the expected takeover against a simulation, the diversity measures against an independent computation, the net properties of the Halton and Sobol points (one point in every elementary box), one individual per stratum in every Latin hypercube, that sequential inhibition accepts a candidate if and only if it is at least δ from every accepted individual, that feasible initialisation always gives full knapsacks and one 1 per row, the comparison means against a replica-by-replica computation, that every step has narration and highlights pseudocode lines that exist, and that the downloadable Python and JavaScript code gives exactly the same results as the tool.
 
 ## Project structure
 
@@ -64,8 +73,9 @@ The tests check the shared problem layer against representation-ga, that every g
 | `js/problems/`, `js/assignment.js`, `js/func.js`, `js/cities.js` | The four problems and six encodings of representation-ga: instances, decoding, evaluation and feasibility |
 | `js/space.js` | Common layer for populations: instances, quality, optimum, size of the search space, distances and diversity measures |
 | `js/items/` | Logic of each strategy or aspect: the population, the random numbers used and the step-by-step trace |
+| `js/compare.js`, `js/ui/compare-page.js` | Comparison of the initialisation strategies over 1000 replicas: logic and page |
 | `js/content/` | Teaching content of each strategy or aspect: explanation, narration, pseudocode, downloadable code and references |
-| `js/viz/`, `js/ui/` | D3 view of a population; controls, narration and measures of each page |
+| `js/viz/`, `js/ui/` | D3 view of a population; controls, narration and measures of each page (`population.js` for the basic strategies, `init-items.js` for the advanced ones) |
 | `js/learn.js` | Learn more panel |
 | `js/about.js`, `js/app.js` | About page and footer, page controller |
 | `js/a11y.js` | Keyboard access to scrollable regions and the role of the main figure |

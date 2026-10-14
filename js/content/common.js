@@ -404,6 +404,79 @@
     },
   });
 
+  // Fase 2: inicialización cuasialeatoria, diversificación secuencial e inicialización factible (cotejar; ver la FTD)
+  Object.assign(refs, {
+    halton1960: {
+      id: 'halton-1960',
+      type: 'article',
+      authors: 'Halton, J. H.',
+      year: '1960',
+      title: 'On the efficiency of certain quasi-random sequences of points in evaluating multi-dimensional integrals',
+      container: 'Numerische Mathematik',
+      details: { es: '2(1), 84–90', en: '2(1), 84–90' },
+      url: 'https://doi.org/10.1007/BF01386213',
+    },
+    sobol1967: {
+      id: 'sobol-1967',
+      type: 'article',
+      authors: 'Sobol, I. M.',
+      year: '1967',
+      title: 'On the distribution of points in a cube and the approximate evaluation of integrals',
+      container: 'USSR Computational Mathematics and Mathematical Physics',
+      details: { es: '7(4), 86–112', en: '7(4), 86–112' },
+      url: 'https://doi.org/10.1016/0041-5553(67)90144-9',
+    },
+    joeKuo2008: {
+      id: 'joe-kuo-2008',
+      type: 'article',
+      authors: 'Joe, S., & Kuo, F. Y.',
+      year: '2008',
+      title: 'Constructing Sobol sequences with better two-dimensional projections',
+      container: 'SIAM Journal on Scientific Computing',
+      details: { es: '30(5), 2635–2654', en: '30(5), 2635–2654' },
+      url: 'https://doi.org/10.1137/070709359',
+    },
+    mckay1979: {
+      id: 'mckay-beckman-conover-1979',
+      type: 'article',
+      authors: 'McKay, M. D., Beckman, R. J., & Conover, W. J.',
+      year: '1979',
+      title: 'A comparison of three methods for selecting values of input variables in the analysis of output from a computer code',
+      container: 'Technometrics',
+      details: { es: '21(2), 239–245', en: '21(2), 239–245' },
+      url: 'https://doi.org/10.2307/1268522',
+    },
+    maaranen2004: {
+      id: 'maaranen-miettinen-makela-2004',
+      type: 'article',
+      authors: 'Maaranen, H., Miettinen, K., & Mäkelä, M. M.',
+      year: '2004',
+      title: 'Quasi-random initial population for genetic algorithms',
+      container: 'Computers & Mathematics with Applications',
+      details: { es: '47(12), 1885–1895', en: '47(12), 1885–1895' },
+      url: 'https://doi.org/10.1016/j.camwa.2003.07.011',
+    },
+    diggle1983: {
+      id: 'diggle-1983',
+      type: 'book',
+      authors: 'Diggle, P. J.',
+      year: '1983',
+      title: 'Statistical analysis of spatial point patterns',
+      details: { es: 'Academic Press', en: 'Academic Press' },
+      url: null,
+    },
+    chuBeasley1998: {
+      id: 'chu-beasley-1998',
+      type: 'article',
+      authors: 'Chu, P. C., & Beasley, J. E.',
+      year: '1998',
+      title: 'A genetic algorithm for the multidimensional knapsack problem',
+      container: 'Journal of Heuristics',
+      details: { es: '4(1), 63–86', en: '4(1), 63–86' },
+      url: 'https://doi.org/10.1023/A:1009642405419',
+    },
+  });
+
   /*
    * Formalización común de la función continua: filas cuyo MathML depende de la función elegida
    * (math(lang, fn)). Las codificaciones solo cambian la fila del espacio de búsqueda.

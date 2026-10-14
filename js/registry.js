@@ -48,19 +48,19 @@
             es: 'Qué pasa con la diversidad si la población parte de una solución voraz o de copias de ella.',
             en: 'What happens to diversity when the population starts from a greedy solution or copies of it.',
           } },
-        { id: 'quasi', level: 'A', phase: 2, ready: false, encodings: REAL,
+        { id: 'quasi', level: 'A', phase: 2, ready: true, encodings: ['function-real'],
           name: { es: 'Cuasialeatoria e hipercubo latino', en: 'Quasi-random and Latin hypercube' },
           summary: {
             es: 'Secuencias de Halton o Sobol y muestreo por hipercubo latino: cubrir el espacio mejor que el azar.',
             en: 'Halton or Sobol sequences and Latin hypercube sampling: covering the space better than chance.',
           } },
-        { id: 'ssi', level: 'A', phase: 2, ready: false, encodings: ALL,
+        { id: 'ssi', level: 'A', phase: 2, ready: true, encodings: ALL,
           name: { es: 'Diversificación secuencial', en: 'Sequential diversification' },
           summary: {
             es: 'Inhibición secuencial simple: un individuo nuevo solo entra si está a una distancia mínima δ de los demás.',
             en: 'Simple sequential inhibition: a new individual is accepted only if it lies at least δ away from the others.',
           } },
-        { id: 'feasible', level: 'A', phase: 2, ready: false, encodings: ['knapsack-bits', 'assignment-matrix'],
+        { id: 'feasible', level: 'A', phase: 2, ready: true, encodings: ['knapsack-bits', 'assignment-matrix'],
           name: { es: 'Inicialización factible', en: 'Feasible initialisation' },
           summary: {
             es: 'Generar solo individuos que cumplen las restricciones: llenar la mochila hasta que no quepa nada, un 1 por fila en la matriz.',

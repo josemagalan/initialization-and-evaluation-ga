@@ -5,6 +5,7 @@
  *
  * URL: #lang=es                          → pantalla inicial
  *      #item=<id>&lang=es&…&step=…       → página de una estrategia o aspecto (el resto, según js/ui/)
+ *      #cmp=init&lang=es&enc=…&N=…&s=…   → comparar las estrategias de inicialización (js/ui/compare-page.js)
  *      #page=about&lang=es               → acerca de
  * También se acepta ?lang=es en la dirección, como en el portal de la serie.
  */
@@ -23,6 +24,7 @@
     btnReset: $('btnReset'), btnPrev: $('btnPrev'), btnPlay: $('btnPlay'), btnNext: $('btnNext'),
     counter: $('stepCounter'), barFill: $('barFill'), speed: $('speed'), speedOut: $('speedOut'),
     narration: $('narration'), legend: $('legend'),
+    cmpView: $('cmpView'), cmpBack: $('cmpBack'),
   };
 
   const fromQuery = new URLSearchParams(location.search).get('lang');
@@ -58,6 +60,7 @@
   const home = createHome(el.famGrid, { registry, t, lang: () => state.lang });
   let learn = null;
   let view = null;
+  let cmp = null;
 
   // ---------- Modelo ----------
 
@@ -198,6 +201,9 @@
     if (state.view === 'about') {
       document.title = `${G.about.text[state.lang].title} · ${t('brand')}`;
       G.about.renderAbout(el.aboutBody, state.lang);
+    } else if (state.view === 'cmp') {
+      document.title = t('compareDocTitle');
+      cmp.onLanguage();
     } else if (state.view === 'item') {
       renderItemHeader();
       state.ui.onLanguage();
@@ -215,11 +221,13 @@
 
   function show(which) {
     stop();
+    if (cmp && which !== 'cmp') cmp.stop();
     const changed = state.view !== which;
     state.view = which;
     el.homeView.hidden = which !== 'home';
     el.itemView.hidden = which !== 'item';
     el.aboutView.hidden = which !== 'about';
+    el.cmpView.hidden = which !== 'cmp';
     if (changed) window.scrollTo(0, 0);
   }
 
@@ -249,21 +257,41 @@
     if (i18n.languages.indexOf(q.get('lang')) !== -1) state.lang = q.get('lang');
     const id = q.get('item');
     if (id && registry.isReady(id) && G.itemUI && G.itemUI[id] && G.content && G.content[id]) showItem(id, q);
+    else if (q.get('cmp') === 'init') showCompare(q);
     else if (q.get('page') === 'about') show('about');
     else show('home');
     applyLanguage();
   }
 
+  function showCompare(q) {
+    const fresh = state.view !== 'cmp';
+    show('cmp');
+    if (!cmp) {
+      cmp = G.createComparePage({
+        controlsEl: $('cmpControls'), tableEl: $('cmpTable'), defsEl: $('cmpDefs'), progressEl: $('cmpProgress'), noteEl: $('cmpNote'),
+        t, fmt, fmtFixed, lang: () => state.lang, onChange: () => writeHash(),
+      });
+    }
+    // Un cambio de idioma reescribe la URL: no hace falta recalcular
+    if (fresh || !state.cmpHash || state.cmpHash !== cmpKey(q)) cmp.init(q);
+  }
+  /** Lo que decide el cálculo de la comparación (sin el idioma). */
+  const cmpKey = (q) => ['enc', 'n', 'm', 'k', 'fn', 'N', 's'].map((k) => `${k}=${q.get(k)}`).join('&');
+
   // Guarda el estado en la URL sin crear entradas de historial (para proyectar o compartir).
   function writeHash() {
     const params = new URLSearchParams();
     if (state.view === 'about') params.set('page', 'about');
+    if (state.view === 'cmp' && cmp) {
+      cmp.hash().forEach(([k, v]) => params.set(k, v));
+      state.cmpHash = cmpKey(params);
+    }
     if (state.view === 'item' && state.result) {
       params.set('item', state.itemId);
       params.set('lang', state.lang);
       state.ui.hash().forEach(([k, v]) => params.set(k, v));
       params.set('step', String(state.step));
-    } else params.set('lang', state.lang);
+    } else if (state.view !== 'cmp') params.set('lang', state.lang);
     const h = params.toString();
     if (location.hash.replace(/^#/, '') === h) return;
     try { history.replaceState(null, '', `#${h}`); } catch (err) { /* file:// en algunos navegadores */ }
@@ -275,7 +303,7 @@
   }));
 
   // Enlaces a la pantalla inicial conservando el idioma
-  [$('brandLink'), $('backLink'), $('aboutBack')].forEach((a) => a.addEventListener('click', (e) => {
+  [$('brandLink'), $('backLink'), $('aboutBack'), $('cmpBack')].forEach((a) => a.addEventListener('click', (e) => {
     e.preventDefault();
     location.hash = `lang=${state.lang}`;
   }));

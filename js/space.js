@@ -180,6 +180,34 @@
     return total / sh.length;
   }
 
+  /**
+   * Cobertura de la caja en la función (null en los demás problemas):
+   *   strata  por cada eje, cuántos de los N intervalos iguales de [a, b] tienen algún individuo (de N)
+   *   hole    el mayor hueco: el punto de una rejilla de 41 × 41 de la caja más alejado de todos los individuos,
+   *           { center, r } con r dividida por la diagonal de la caja (la misma escala que las distancias)
+   */
+  const HOLE_GRID = 40;
+  function stratumOf(t, n) { return Math.max(0, Math.min(n - 1, Math.floor(t * n + 1e-9))); }
+  function coverage(enc, inst, pop) {
+    if (enc !== 'function-real' && enc !== 'function-bits') return null;
+    const F = Fn.fnOf(inst.fn);
+    const N = pop.length;
+    const w = F.b - F.a;
+    const pts = pop.map((x) => point(enc, inst, x));
+    const strata = [0, 1].map((d) => new Set(pts.map((p) => stratumOf((p[d] - F.a) / w, N))).size);
+    let hole = { r: -1, center: null };
+    for (let i = 0; i <= HOLE_GRID; i++) {
+      const x = F.a + (i * w) / HOLE_GRID;
+      for (let j = 0; j <= HOLE_GRID; j++) {
+        const y = F.a + (j * w) / HOLE_GRID;
+        let m = Infinity;
+        for (const p of pts) { const d = Math.hypot(p[0] - x, p[1] - y); if (d < m) m = d; }
+        if (m > hole.r) hole = { r: m, center: [x, y] };
+      }
+    }
+    return { strata, N, hole: { center: hole.center, r: hole.r / (Math.SQRT2 * w), radius: hole.r } };
+  }
+
   /** Clave de un individuo: dos cromosomas iguales (en el viajante, el mismo circuito) dan la misma clave. */
   function key(enc, x) {
     if (enc !== 'tsp-perm') return x.join(',');
@@ -209,13 +237,13 @@
     return {
       D, quality: q, meanDist: pairs ? sum / pairs : 0, minDist: pairs ? min : 0,
       distinct: new Set(pop.map((x) => key(enc, x))).size, feasible: objs.length, entropy: geneEntropy(enc, inst, pop),
-      best, worst, mean, optimum: opt, gap, sense: s,
+      best, worst, mean, optimum: opt, gap, sense: s, coverage: coverage(enc, inst, pop),
     };
   }
 
   const api = {
     ENCODINGS, LIMITS, params, instance, shape, sense, toRows, point, quality, optimum, spaceInfo,
-    hamming, edges, tourDistance, distance, DISTANCE_KIND, distanceMatrix, geneEntropy, key, measures,
+    hamming, edges, tourDistance, distance, DISTANCE_KIND, distanceMatrix, geneEntropy, stratumOf, coverage, key, measures,
   };
   if (isNode) module.exports = api;
   else (root.GAX = root.GAX || {}).space = api;

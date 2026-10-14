@@ -8,6 +8,11 @@
  *   step.ind      individuo que se está generando o se acaba de generar (resaltado)
  *   step.draw     sorteo del primer individuo que se está mostrando (etapa 3)
  *   step.show     'distance' para ver la matriz de distancias en el panel
+ *   step.partial  { known, active }: genes ya decididos del individuo 1 (en cualquier orden) y los que se deciden ahora
+ *   step.cand     candidato que se está examinando (inhibición secuencial): fila extra bajo la población
+ *   step.grid     'strata': rejilla de N × N estratos en el mapa de la función
+ *   step.ghost    dibuja también la población uniforme de la misma semilla (model.uniformPop), en hueco
+ *   step.hole     dibuja el mayor hueco de las dos poblaciones (model.measures.coverage)
  * Con poco ancho, el panel pasa debajo de la rejilla.
  */
 (function (root) {
@@ -51,8 +56,8 @@
       const sh = model.shape;
       const cw = cellWidth(sh);
       const cells = cellX(sh, sh.length - 1) + cw;
-      const gridW = LABEL + cells + 12 + QCOL;
-      const gridH = TOP + model.pop.length * ROW;
+      const gridW = LABEL + cells + 12 + QCOL + (model.candidates ? 10 : 0);
+      const gridH = TOP + model.pop.length * ROW + (model.candidates ? ROW + 14 : 0);
       const side = width >= gridW + GAP + PANEL;
       const panelX = side ? gridW + GAP : Math.max(0, (Math.max(gridW, PANEL) - PANEL) / 2);
       const panelY = side ? 0 : gridH + 26;
@@ -102,12 +107,13 @@
         ['x₁', 'x₂'].forEach((lab, v) => gGrid.append('text').attr('class', 'pv-sub').attr('text-anchor', 'middle')
           .attr('x', LABEL + cellX(sh, v * sh.k) + (sh.k * (L.cw + 2) - 2) / 2).attr('y', TOP - 18).text(lab));
       }
-      const first = step.stage === 3 && step.draw != null ? step : null;
+      const partial = step.partial || null;
+      const first = !partial && step.stage === 3 && step.draw != null ? step : null;
       const d0 = first ? model.draws[0][first.draw] : null;
       for (let i = 0; i < N; i++) {
         const isSeed = isSeedRow(model, i);
         const complete = visible(model, step, i);
-        const building = !!first && i === 0;
+        const building = (!!first || !!partial) && i === 0;
         const row = gGrid.append('g')
           .attr('class', `pv-row${i === step.ind ? ' current' : ''}${!complete && !building ? ' pending' : ''}${isSeed && complete ? ' seed' : ''}`)
           .attr('transform', `translate(0,${TOP + i * ROW})`);
@@ -115,17 +121,21 @@
         row.append('text').attr('class', 'pv-label').attr('x', LABEL - 10).attr('y', ROW / 2 + 5).attr('text-anchor', 'end').text(`I${i + 1}`);
         let genes = null;
         let known = 0;
-        if (complete) { genes = model.pop[i]; known = sh.length; } else if (building) {
+        if (complete) { genes = model.pop[i]; known = sh.length; } else if (building && partial) {
+          genes = model.pop[0];
+        } else if (building) {
           if (sh.kind === 'perm') { genes = d0.after; known = sh.length; } else { genes = model.pop[0]; known = first.draw + 1; }
         }
         for (let g = 0; g < sh.length; g++) {
-          const has = !!genes && g < known;
+          const has = !!genes && (building && partial && !complete ? partial.known.indexOf(g) !== -1 : g < known);
           const v = has ? genes[g] : null;
           let cls = 'pv-gene';
           if (!has) cls += ' empty';
           else if (sh.kind === 'bits' || sh.kind === 'matrix') cls += v ? ' one' : ' zero';
           else cls += ' val';
-          if (building) {
+          if (building && partial) {
+            if ((partial.active || []).indexOf(g) !== -1) cls += ' active';
+          } else if (building) {
             if (sh.kind === 'perm') {
               if (g === d0.k - 1 || g === d0.j - 1) cls += ' active';
               else if (g >= d0.k) cls += ' fixed';
@@ -145,6 +155,33 @@
           row.append('text').attr('class', `pv-q${q.feasible ? '' : ' infeasible'}`).attr('x', LABEL + L.cells + 12 + QCOL)
             .attr('y', ROW / 2 + 5).attr('text-anchor', 'end').text(q.feasible ? fmt(q.objective) : t('pvInfeasible'));
         }
+      }
+    }
+
+    /** Fila del candidato (inhibición secuencial), bajo la población. */
+    function drawCandidate(step, model, L) {
+      const sh = L.sh;
+      const cd = model.candidates[step.cand];
+      const y = TOP + model.pop.length * ROW + 14;
+      const row = gGrid.append('g').attr('class', `pv-row pv-cand ${cd.accepted ? 'ok' : 'rej'}`).attr('transform', `translate(0,${y})`);
+      row.append('rect').attr('class', 'pv-cand-bg').attr('x', 0).attr('y', 0).attr('width', LABEL + L.cells + 12 + QCOL + 8).attr('height', ROW).attr('rx', 6);
+      row.append('text').attr('class', 'pv-label').attr('x', LABEL - 10).attr('y', ROW / 2 + 5).attr('text-anchor', 'end').text(`C${step.cand + 1}`);
+      for (let g = 0; g < sh.length; g++) {
+        const v = cd.x[g];
+        let cls = 'pv-gene';
+        if (sh.kind === 'bits' || sh.kind === 'matrix') cls += v ? ' one' : ' zero';
+        else cls += ' val';
+        const cell = row.append('g').attr('class', cls).attr('transform', `translate(${LABEL + cellX(sh, g)},3)`);
+        cell.append('rect').attr('width', L.cw).attr('height', ROW - 6).attr('rx', 5);
+        cell.append('text').attr('x', L.cw / 2).attr('y', ROW / 2 + 2).attr('text-anchor', 'middle').text(geneText(sh, v));
+      }
+      const txt = cd.dmin == null ? t('pvCandFirst') : t(cd.accepted ? 'pvCandOk' : 'pvCandRej', { d: fmtFixed(cd.dmin, 2) });
+      row.append('text').attr('class', `pv-q${cd.accepted ? '' : ' infeasible'}`).attr('x', LABEL + L.cells + 12 + QCOL)
+        .attr('y', ROW / 2 + 5).attr('text-anchor', 'end').text(txt);
+      if (cd.nearest != null && step.done > cd.nearest) {
+        // marca el individuo más cercano
+        gGrid.append('rect').attr('class', 'pv-near').attr('x', 1).attr('y', TOP + cd.nearest * ROW + 1)
+          .attr('width', LABEL + L.cells + 4).attr('height', ROW - 2).attr('rx', 6);
       }
     }
 
@@ -192,7 +229,44 @@
       g.append('rect').attr('class', 'fbox').attr('width', PANEL).attr('height', PANEL);
       F.minima.forEach((m) => g.append('path').attr('class', 'pv-min')
         .attr('d', d3.symbol(d3.symbolCross, 80)()).attr('transform', `translate(${sx(m[0])},${sy(m[1])}) rotate(45)`));
+      const N = model.pop.length;
+      if (step.grid === 'strata') {
+        for (let k = 1; k < N; k++) {
+          g.append('line').attr('class', 'pv-strata').attr('x1', (k * PANEL) / N).attr('x2', (k * PANEL) / N).attr('y1', 0).attr('y2', PANEL);
+          g.append('line').attr('class', 'pv-strata').attr('y1', (k * PANEL) / N).attr('y2', (k * PANEL) / N).attr('x1', 0).attr('x2', PANEL);
+        }
+      }
+      const scaleR = PANEL / (F.b - F.a);
+      // Lo que pueda salirse de la caja (huecos, círculos δ) se recorta a ella
+      g.append('clipPath').attr('id', 'pvFnClip').append('rect').attr('width', PANEL).attr('height', PANEL);
+      const clipped = g.append('g').attr('clip-path', 'url(#pvFnClip)');
+      if (step.hole && model.measures.coverage) {
+        const holes = [['pv-hole', model.measures.coverage.hole]];
+        if (model.uniformMeasures) holes.unshift(['pv-hole ghost', model.uniformMeasures.coverage.hole]);
+        holes.forEach(([cls, h]) => {
+          clipped.append('circle').attr('class', cls).attr('cx', sx(h.center[0])).attr('cy', sy(h.center[1])).attr('r', h.radius * scaleR);
+          clipped.append('circle').attr('class', `${cls} centre`).attr('cx', sx(h.center[0])).attr('cy', sy(h.center[1])).attr('r', 3);
+        });
+      }
+      if (step.ghost && model.uniformPop) {
+        g.selectAll('circle.pv-ghost').data(model.uniformPop.map((x) => S.point(model.enc, model.inst, x))).join('circle')
+          .attr('class', 'pv-ghost').attr('cx', (p) => sx(p[0])).attr('cy', (p) => sy(p[1])).attr('r', 4.5);
+      }
+      if (model.delta != null && model.candidates && step.stage <= 3) {
+        // círculos de radio δ (en diagonales de la caja) alrededor de los individuos aceptados
+        const r = model.delta * Math.SQRT2 * PANEL;
+        shownIdx(model, step).forEach((i) => {
+          const p = model.quality[i].point;
+          clipped.append('circle').attr('class', 'pv-delta').attr('cx', sx(p[0])).attr('cy', sy(p[1])).attr('r', r);
+        });
+      }
       const pts = shownIdx(model, step).map((i) => ({ i, p: model.quality[i].point }));
+      if (step.cand != null) {
+        const cd = model.candidates[step.cand];
+        const p = S.point(model.enc, model.inst, cd.x);
+        g.append('path').attr('class', `pv-candpt ${cd.accepted ? 'ok' : 'rej'}`).attr('d', d3.symbol(d3.symbolDiamond, 110)())
+          .attr('transform', `translate(${sx(p[0])},${sy(p[1])})`);
+      }
       const dots = g.selectAll('g.pv-pt').data(pts).join('g').attr('class', (d) => `pv-pt${d.i === step.ind ? ' current' : ''}`)
         .attr('transform', (d) => `translate(${sx(d.p[0])},${sy(d.p[1])})`);
       dots.append('circle').attr('r', (d) => (d.i === step.ind ? 7 : 5));
@@ -244,6 +318,17 @@
       g.append('line').attr('class', 'pv-axisline').attr('x1', x0).attr('x2', x0).attr('y1', 0).attr('y2', y1);
       g.append('text').attr('class', 'pv-axis').attr('x', PANEL).attr('y', y1 + 18).attr('text-anchor', 'end').text(t('pvWeight'));
       g.append('text').attr('class', 'pv-axis').attr('x', x0 - 6).attr('y', 10).attr('text-anchor', 'end').text(t('pvValue'));
+      if (step.ghost && model.uniformPop) {
+        const KS = root.GAX.problems['knapsack-bits'];
+        g.selectAll('circle.pv-ghost').data(model.uniformPop).join('circle').attr('class', 'pv-ghost')
+          .attr('cx', (x) => sx(KS.weightOf(inst, x))).attr('cy', (x) => sy(KS.valueOf(inst, x))).attr('r', 4.5);
+      }
+      if (step.cand != null) {
+        const KS = root.GAX.problems['knapsack-bits'];
+        const cd = model.candidates[step.cand];
+        g.append('path').attr('class', `pv-candpt ${cd.accepted ? 'ok' : 'rej'}`).attr('d', d3.symbol(d3.symbolDiamond, 110)())
+          .attr('transform', `translate(${sx(KS.weightOf(inst, cd.x))},${sy(KS.valueOf(inst, cd.x))})`);
+      }
       const pts = shownIdx(model, step).map((i) => ({ i, q: model.quality[i] }));
       const dots = g.selectAll('g.pv-pt').data(pts).join('g')
         .attr('class', (d) => `pv-pt${d.q.feasible ? '' : ' infeasible'}${d.i === step.ind ? ' current' : ''}`)
@@ -328,6 +413,7 @@
       const L = layout(model, width || 900);
       svg.attr('viewBox', `0 0 ${L.W} ${L.H}`).attr('width', L.W).attr('height', L.H);
       drawGrid(step, model, L);
+      if (step.cand != null && model.candidates) drawCandidate(step, model, L);
       if (step.show === 'distance') drawDistances(step, model, L);
       else if (step.show === 'takeover') drawTakeover(step, model, L);
       else if (model.enc === 'function-real' || model.enc === 'function-bits') drawFunction(step, model, L);

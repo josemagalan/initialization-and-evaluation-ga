@@ -194,3 +194,149 @@ print(json.dumps([out, expected_copies(2, 12, 8)]))
     assert.deepEqual(ex.slice(0, 3), ['[0, 0, 1, 1]', '[1, 2, 2]', '[1, 1.9, 3.44, 5.7, 8.15, 9.66, 9.99]']);
   }
 });
+
+// ---------- Fase 2: cuasialeatoria, inhibición secuencial e inicialización factible ----------
+
+/** Cada paso de cada variante tiene narración y resalta líneas que existen en el pseudocódigo de esa variante. */
+function checkSteps(id, cases) {
+  const c = content(id);
+  for (const { variant, steps } of cases) {
+    const ids = new Set(c.pseudocodeFor('es', variant).map((l) => l.id));
+    assert.deepEqual(c.pseudocodeFor('en', variant).map((l) => l.id), c.pseudocodeFor('es', variant).map((l) => l.id));
+    for (const st of steps) {
+      const lines = c.stepLines[st.type] || [];
+      assert.ok(lines.length, `${id}/${variant}: sin líneas para ${st.type}`);
+      lines.forEach((l) => assert.ok(ids.has(l), `${id}/${variant}: ${st.type} → ${l}`));
+      assert.ok(Object.keys(c.narration.es).some((k) => k === st.type || k.startsWith(`${st.type}_`)), `${id}: sin narración para ${st.type}`);
+    }
+  }
+}
+
+test('cuasialeatoria, inhibición secuencial y factible: narración y pseudocódigo de cada paso', () => {
+  const Q = require('../js/items/quasi.js');
+  const X = require('../js/items/ssi.js');
+  const F = require('../js/items/feasible.js');
+  checkSteps('quasi', Q.METHODS.map((m) => ({ variant: m, steps: Q.run('function-real', S.instance('function-real', 1), 6, 2, { method: m }).steps })));
+  checkSteps('ssi', S.ENCODINGS.map((enc) => ({ variant: enc, steps: X.run(enc, S.instance(enc, 1), 8, 2, {}).steps })));
+  checkSteps('feasible', F.ENCODINGS.map((enc) => ({ variant: enc, steps: F.run(enc, S.instance(enc, 1), 6, 2).steps })));
+});
+
+/** Ejecuta un script de Python que importa el fichero descargable `file` (escrito en un directorio temporal). */
+function runPython(id, file, lang, body, data) {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ieg-'));
+  fs.writeFileSync(path.join(dir, file), content(id).getCode('python', lang));
+  fs.writeFileSync(path.join(dir, 'cases.json'), JSON.stringify(data));
+  const mod = file.replace(/\.py$/, '');
+  const script = `import json, sys\nsys.path.insert(0, ${JSON.stringify(dir)})\nfrom ${mod} import *\ncases = json.load(open(${JSON.stringify(path.join(dir, 'cases.json'))}))\n${body}`;
+  const out = execFileSync('python3', ['-c', script], { encoding: 'utf8' });
+  const ex = execFileSync('python3', [path.join(dir, file)], { encoding: 'utf8' }).split(/\r?\n/);
+  return { res: JSON.parse(out), ex };
+}
+
+test('cuasialeatoria (JavaScript y Python): Halton, Sobol e hipercubo latino dan la misma población que la herramienta', () => {
+  const Q = require('../js/items/quasi.js');
+  const cases = [];
+  for (const fn of ['himmelblau', 'rastrigin']) {
+    const inst = S.instance('function-real', 1, { fn });
+    for (let N = 4; N <= 20; N += 4) {
+      for (let s = 0; s < 6; s++) {
+        const g = Q.population('function-real', inst, N, s, 'lhs');
+        const us = g.permDraws[0].map((d) => d.u).concat(g.permDraws[1].map((d) => d.u), g.draws.flatMap((row) => row.map((c) => c.v)));
+        cases.push({ N, a: g.shape.a, b: g.shape.b, us, lhs: g.pop,
+          halton: Q.population('function-real', inst, N, s, 'halton').pop, sobol: Q.population('function-real', inst, N, s, 'sobol').pop });
+      }
+    }
+  }
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('quasi').getCode('javascript', l));
+    cases.forEach((c, i) => {
+      assert.deepEqual(code.haltonPopulation(c.N, c.a, c.b), c.halton, `halton ${i}`);
+      assert.deepEqual(code.sobolPopulation(c.N, c.a, c.b), c.sobol, `sobol ${i}`);
+      const us = c.us.slice();
+      assert.deepEqual(code.latinHypercube(c.N, c.a, c.b, () => us.shift()), c.lhs, `lhs ${i}`);
+    });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('quasi', 'quasi_random_initialisation.py', l, `
+out = []
+for c in cases:
+    us = iter(c["us"]); rand = lambda: next(us)
+    out.append([halton_population(c["N"], c["a"], c["b"]), sobol_population(c["N"], c["a"], c["b"]), latin_hypercube(c["N"], c["a"], c["b"], rand)])
+print(json.dumps(out))
+`, cases);
+    res.forEach((r, i) => { assert.deepEqual(r, [cases[i].halton, cases[i].sobol, cases[i].lhs], `${l}: caso ${i}`); });
+    assert.deepEqual(ex.slice(0, 3), ['[0.5, 0.25, 0.75, 0.125]', '[0.5, 0.75, 0.25, 0.625]', '[[0.0, -1.67], [-2.5, 1.67], [2.5, -3.89]]']);
+  }
+});
+
+test('inhibición secuencial (JavaScript y Python): mismos individuos aceptados y mismo número de candidatos', () => {
+  const X = require('../js/items/ssi.js');
+  const encs = ['knapsack-bits', 'assignment-int', 'tsp-perm', 'function-real'];
+  const cases = [];
+  for (const enc of encs) {
+    for (let s = 0; s < 12; s++) {
+      const inst = S.instance(enc, s);
+      const delta = [0.2, X.DEFAULT_DELTA[enc], 0.6][s % 3];
+      const g = X.population(enc, inst, 8, s, delta);
+      const sh = S.shape(enc, inst);
+      cases.push({ enc, delta, a: sh.a, b: sh.b, cands: g.candidates.map((c) => c.x), pop: g.pop, total: g.total });
+    }
+  }
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('ssi').getCode('javascript', l));
+    cases.forEach((c, i) => {
+      const dist = c.enc === 'tsp-perm' ? code.tourDistance : c.enc === 'function-real' ? (p, q) => code.euclideanDistance(p, q, c.a, c.b) : code.hammingDistance;
+      const cands = c.cands.slice();
+      const r = code.sequentialInhibition(8, () => cands.shift(), dist, c.delta);
+      assert.deepEqual(r.population, c.pop, `${c.enc} ${i}`);
+      assert.equal(r.candidates, c.total);
+    });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('ssi', 'sequential_inhibition.py', l, `
+out = []
+for c in cases:
+    it = iter(c["cands"])
+    if c["enc"] == "tsp-perm": d = tour_distance
+    elif c["enc"] == "function-real": d = lambda p, q, c=c: euclidean_distance(p, q, c["a"], c["b"])
+    else: d = hamming_distance
+    pop, total = sequential_inhibition(8, lambda: next(it), d, c["delta"])
+    out.append([pop, total])
+print(json.dumps(out))
+`, cases);
+    res.forEach((r, i) => assert.deepEqual(r, [cases[i].pop, cases[i].total], `${l}: caso ${i}`));
+    assert.equal(ex[0], '[[0, 0, 0, 0], [1, 1, 0, 0], [0, 1, 1, 1]] 4');
+  }
+});
+
+test('inicialización factible (JavaScript y Python): misma población que la herramienta', () => {
+  const F = require('../js/items/feasible.js');
+  const cases = [];
+  for (let s = 0; s < 25; s++) {
+    const ks = S.instance('knapsack-bits', s);
+    const gk = F.population('knapsack-bits', ks, 6, s);
+    const am = S.instance('assignment-matrix', s);
+    const gm = F.population('assignment-matrix', am, 6, s);
+    cases.push({
+      weights: ks.weights, capacity: ks.capacity, kus: gk.details.flatMap((d) => d.swaps.map((x) => x.u)), kpop: gk.pop,
+      n: am.p.length, m: am.p[0].length, mus: gm.details.flatMap((d) => d.rows.map((r) => r.u)), mpop: gm.pop.map((x) => S.toRows(x, am.p[0].length)),
+    });
+  }
+  for (const l of ['es', 'en']) {
+    const code = loadJs(content('feasible').getCode('javascript', l));
+    cases.forEach((c, i) => {
+      const ku = c.kus.slice();
+      assert.deepEqual(Array.from({ length: 6 }, () => code.fullKnapsack(c.weights, c.capacity, () => ku.shift())), c.kpop, `mochila ${i}`);
+      const mu = c.mus.slice();
+      assert.deepEqual(Array.from({ length: 6 }, () => code.onePerRow(c.n, c.m, () => mu.shift())), c.mpop, `matriz ${i}`);
+    });
+    if (!hasPython()) continue;
+    const { res, ex } = runPython('feasible', 'feasible_initialisation.py', l, `
+out = []
+for c in cases:
+    ku = iter(c["kus"]); mu = iter(c["mus"])
+    out.append([[full_knapsack(c["weights"], c["capacity"], lambda: next(ku)) for _ in range(6)], [one_per_row(c["n"], c["m"], lambda: next(mu)) for _ in range(6)]])
+print(json.dumps(out))
+`, cases);
+    res.forEach((r, i) => assert.deepEqual(r, [cases[i].kpop, cases[i].mpop], `${l}: caso ${i}`));
+    assert.deepEqual(ex.slice(0, 2), ['[0, 0, 1, 1]', '[[0, 1, 0], [1, 0, 0]]']);
+  }
+});

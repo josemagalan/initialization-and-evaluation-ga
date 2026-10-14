@@ -61,6 +61,16 @@
         const list = node('ul', 'op-list');
         fam.items.forEach((it) => list.append(item(it, l)));
         card.append(head, chromo, node('p', 'rep-desc', fam.desc[l]), list);
+        if (fam.id === 'init') {
+          const p = node('p', 'home-cmp');
+          const a = node('a', null, `${t('cmpHomeLink')} `);
+          a.href = `#cmp=init&lang=${l}`;
+          const arrow = node('span', null, '→');
+          arrow.setAttribute('aria-hidden', 'true');
+          a.append(arrow);
+          p.append(a);
+          card.append(p);
+        }
         return card;
       }));
     }

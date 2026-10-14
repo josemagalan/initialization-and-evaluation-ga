@@ -1424,3 +1424,31 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .pv-pt.seed circle { fill: var(--p2); stroke: var(--ink); }
 .pv-bar.seed { fill: var(--p2); }
 .pv-mini.seed .pv-route { stroke: var(--p2); stroke-width: 2.6; }
+
+/* Fase 2: cuasialeatoria, inhibición secuencial e inicialización factible */
+.pv-strata { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; opacity: 0.55; }
+.pv-ghost { fill: var(--card); stroke: var(--muted); stroke-width: 1.8; }
+.pv-hole { fill: color-mix(in srgb, var(--p2) 14%, transparent); stroke: var(--p2-text); stroke-width: 2.5; }
+.pv-hole.ghost { fill: none; stroke: var(--muted); stroke-width: 2; stroke-dasharray: 6 4; }
+.pv-hole.centre { fill: var(--p2-text); stroke: none; }
+.pv-hole.ghost.centre { fill: var(--muted); stroke: none; }
+.pv-delta { fill: color-mix(in srgb, var(--p1) 10%, transparent); stroke: var(--p1); stroke-width: 1; stroke-dasharray: 3 3; }
+.pv-candpt { stroke: var(--ink); stroke-width: 1.5; }
+.pv-candpt.ok { fill: var(--wide); }
+.pv-candpt.rej { fill: var(--conflict); }
+.pv-cand-bg { fill: none; stroke: var(--wide); stroke-width: 2.5; }
+.pv-cand.rej .pv-cand-bg { stroke: var(--conflict); stroke-dasharray: 6 4; }
+.pv-cand.rej .pv-q { fill: var(--conflict-text); }
+.pv-cand .pv-label { fill: var(--ink); }
+.pv-near { fill: none; stroke: var(--p2-text); stroke-width: 2.5; stroke-dasharray: 5 3; }
+.sw-ghost { background: var(--card); border: 2px solid var(--muted); border-radius: 50%; }
+.sw-hole { background: color-mix(in srgb, var(--p2) 14%, transparent); border: 2.5px solid var(--p2-text); border-radius: 50%; }
+.sw-cand { background: transparent; border: 3px solid var(--wide); }
+.sw-rej { background: transparent; border: 3px dashed var(--conflict); }
+.sw-near { background: transparent; border: 2.5px dashed var(--p2-text); }
+.sw-delta { background: color-mix(in srgb, var(--p1) 10%, transparent); border: 1.5px dashed var(--p1); border-radius: 50%; }
+
+/* Comparar estrategias de inicialización */
+.home-cmp { margin: 14px 0 0; }
+.home-cmp a { font-weight: 700; color: var(--p1-text); }
+.cmp-det { display: block; font-weight: 600; margin-top: 2px; }

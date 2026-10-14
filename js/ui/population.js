@@ -33,10 +33,12 @@
       const btnInst = c.button({ id: 'btnInstance', labelKey: 'ctlNewInstance', onClick: () => { state.s = R.newSeed(); changed('start'); } });
       const btnPop = c.button({ id: 'btnPopulation', labelKey: 'ctlNewPopulation', primary: true, onClick: () => { state.ps = R.newSeed(); changed('start'); } });
       const seedsHint = c.hint('seedsHint');
+      const cmpLink = c.el('a', 'btn', { id: 'btnCompare', href: '#', 'data-i18n': 'compareLink' });
+      cmpLink.textContent = t('compareLink');
       const extraFields = spec.extraControls ? spec.extraControls(c, state, { changed, t }) : [];
       ctx.controlsEl.replaceChildren(
         c.row(encSel.field, nRange.field, mRange.field, fnSel.field, kRange.field, popRange.field, ...extraFields.map((f) => f.field || f)),
-        c.buttons(btnInst, btnPop),
+        c.buttons(btnInst, btnPop, cmpLink),
         seedsHint,
       );
 
@@ -83,7 +85,17 @@
           qualityLabel: `pvQ_${state.enc}`,
         });
         seedsHint.textContent = t('seedsHint', { s: state.s, ps: state.ps });
+        updateCompareLink();
         return r;
+      }
+
+      /** Enlace a la comparación de estrategias con este problema, este N y esta instancia. */
+      function updateCompareLink() {
+        const q = new URLSearchParams([['cmp', 'init'], ['lang', ctx.lang()], ['enc', state.enc]]);
+        Object.entries(S.params(state.enc, state.p)).forEach(([k, v]) => q.set(k, String(v)));
+        q.set('N', String(state.N));
+        q.set('s', String(state.s));
+        cmpLink.href = `#${q.toString()}`;
       }
 
       // ---------- Textos ----------
@@ -191,7 +203,7 @@
             const f = (v) => (state.enc === 'tsp-perm' ? fmtFixed(v, 1) : state.enc.startsWith('function') ? fmtFixed(v, 2) : fmt(v));
             return { key: M.sense === 'max' ? 'quality_max' : 'quality_min', params: { best: f(M.best), mean: f(M.mean), worst: f(M.worst), opt: f(M.optimum) } };
           }
-          default: return spec.narrate ? spec.narrate(step, state, { t, fmt, fmtFixed, chromText, qualityText, content: ctx.content, lang: ctx.lang }) : { key: step.type, params: {} };
+          default: return spec.narrate ? spec.narrate(step, state, { t, fmt, fmtFixed, chromText, qualityText, expectedDist, pct, big, content: ctx.content, lang: ctx.lang }) : { key: step.type, params: {} };
         }
       }
 
@@ -215,8 +227,9 @@
         table.hidden = !complete;
         if (!complete) return;
         const f = (v) => (v == null ? '—' : state.enc === 'tsp-perm' ? fmtFixed(v, 1) : state.enc.startsWith('function') ? fmtFixed(v, 2) : fmt(v));
-        // Con dos poblaciones (contraejemplo de la siembra), una columna por población
+        // Con dos poblaciones (la uniforme de la misma semilla y la de la estrategia), una columna por población
         const sets = m.uniformMeasures ? [m.uniformMeasures, m.measures] : [m.measures];
+        const cols = m.columns || ['mUniformPop', 'mSeededPop'];
         const M0 = m.measures;
         const rows = [
           ['mDistinct', (M) => `${M.distinct} / ${N}`],
@@ -226,12 +239,17 @@
         ];
         if (!m.uniformMeasures) rows.splice(3, 0, ['mExpected', () => expectedDist()]);
         if (M0.entropy != null) rows.push(['mEntropy', (M) => fmtFixed(M.entropy, 2)]);
+        if (M0.coverage) {
+          rows.push(['mStrata', (M) => t('mStrataVal', { s1: M.coverage.strata[0], s2: M.coverage.strata[1], N })]);
+          rows.push(['mHole', (M) => fmtFixed(M.coverage.hole.r, 2)]);
+        }
         rows.push([M0.sense === 'max' ? 'mBestMax' : 'mBestMin', (M) => f(M.best)], ['mMean', (M) => f(M.mean)], ['mOptimum', (M) => f(M.optimum)]);
+        if (m.costs) rows.push(['mCost', (M) => String(M === m.measures ? m.costs[1] : m.costs[0])]);
         const parts = [];
         if (m.uniformMeasures) {
           const thead = c.el('thead');
           const tr = c.el('tr');
-          ['mMeasure', 'mUniformPop', 'mSeededPop'].forEach((k) => { const th = c.el('th', null, { scope: 'col' }); th.textContent = t(k); tr.append(th); });
+          ['mMeasure'].concat(cols).forEach((k) => { const th = c.el('th', null, { scope: 'col' }); th.textContent = t(k); tr.append(th); });
           thead.append(tr);
           parts.push(thead);
         }
@@ -278,9 +296,12 @@
         encOptions();
         seedsHint.textContent = t('seedsHint', { s: state.s, ps: state.ps });
         ctx.controlsEl.querySelectorAll('[data-i18n]').forEach((n) => { n.textContent = t(n.dataset.i18n); });
+        if (spec.sync) spec.sync(state);
+        updateCompareLink();
       }
 
       const legendFor = () => {
+        if (spec.legend) return spec.legend(state);
         const base = [['sw-one', 'lgOne'], ['sw-zero', 'lgZero'], ['sw-active', 'lgActive'], ['sw-empty', 'lgEmpty']];
         const sh = state.model ? state.model.shape : null;
         const seed = state.model && state.model.seedRows ? [['sw-seed', 'lgSeed']] : [];

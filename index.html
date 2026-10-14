@@ -141,6 +141,30 @@
       </footer>
     </main>
 
+    <main id="cmpView" hidden>
+      <header class="op-head">
+        <a class="back" href="#" id="cmpBack"><span aria-hidden="true">←</span> <span data-i18n="allItems">Inicialización y evaluación</span></a>
+        <p class="eyebrow" data-i18n="cmpEyebrow">Inicialización</p>
+        <h1 data-i18n="compareTitle">Comparar estrategias de inicialización</h1>
+        <p class="subtitle" data-i18n="compareLead"></p>
+      </header>
+      <section class="card controls" aria-labelledby="cmp-controls-title">
+        <h2 id="cmp-controls-title" class="sr-only" data-i18n="controlsTitle">Controles</h2>
+        <div id="cmpControls"></div>
+      </section>
+      <section class="card" aria-labelledby="cmp-table-title">
+        <div class="cmp-section-head">
+          <h2 id="cmp-table-title" class="learn-title" data-i18n="compareTableTitle">Medias en 1000 réplicas</h2>
+          <span class="cmp-progress" id="cmpProgress" aria-live="polite"></span>
+        </div>
+        <p class="hint" id="cmpNote"></p>
+        <div class="table-scroll"><table id="cmpTable" class="cmp-table"></table></div>
+        <h3 class="cmp-defs-title" data-i18n="compareDefsTitle">Qué mide cada columna</h3>
+        <dl id="cmpDefs" class="cmp-defs"></dl>
+        <p class="hint cmp-refs" data-i18n="compareRefs"></p>
+      </section>
+    </main>
+
     <main id="aboutView" hidden>
       <a class="back" href="#" id="aboutBack"><span aria-hidden="true">←</span> <span data-i18n="allItems">Inicialización y evaluación</span></a>
       <article class="card about" id="aboutBody"></article>
@@ -164,12 +188,21 @@
   <script src="js/space.js"></script>
   <script src="js/items/uniform.js"></script>
   <script src="js/items/seeded.js"></script>
+  <script src="js/items/quasi.js"></script>
+  <script src="js/items/ssi.js"></script>
+  <script src="js/items/feasible.js"></script>
+  <script src="js/compare.js"></script>
   <script src="js/content/common.js"></script>
   <script src="js/content/uniform.js"></script>
   <script src="js/content/seeded.js"></script>
+  <script src="js/content/quasi.js"></script>
+  <script src="js/content/ssi.js"></script>
+  <script src="js/content/feasible.js"></script>
   <script src="js/viz/population-view.js"></script>
   <script src="js/ui/controls.js"></script>
   <script src="js/ui/population.js"></script>
+  <script src="js/ui/init-items.js"></script>
+  <script src="js/ui/compare-page.js"></script>
   <script src="js/learn.js"></script>
   <script src="js/about.js"></script>
   <script src="js/home.js"></script>
