@@ -1,6 +1,6 @@
 {
   "name": "initialization-and-evaluation-ga",
-  "version": "0.4.0-dev",
+  "version": "0.5.0-dev",
   "private": true,
   "description": "Interactive teaching tool (D3.js) that shows, step by step, how the population of a genetic algorithm is initialised and evaluated",
   "scripts": {

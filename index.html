@@ -28,6 +28,7 @@
         <p class="lead" data-i18n="homeLead"></p>
       </section>
       <div id="famGrid" class="rep-grid fam-grid"></div>
+      <p class="home-extra"><a href="#page=moodle" id="moodleLink"><span data-i18n="moodleHomeLink">Para profesorado: bancos de preguntas para Moodle</span> <span aria-hidden="true">→</span></a></p>
       <p class="home-extra home-sister">
         <span data-i18n="seriesBefore">Antes de inicializar, representar las soluciones:</span>
         <span class="series-links">
@@ -60,6 +61,7 @@
       <section class="card stage">
         <div class="stage-top">
           <ol class="stage-strip" id="stageStrip" data-i18n-aria="stagesLabel" aria-label="Etapas"></ol>
+          <button type="button" id="btnPractice" class="btn practice-btn" aria-pressed="false">Practicar</button>
         </div>
         <div class="viz-scroll" id="vizScroll">
           <svg id="viz" role="img" aria-labelledby="vizLabel">
@@ -98,6 +100,8 @@
         </div>
         <ul class="legend" id="legend"></ul>
       </section>
+
+      <section class="card practice" id="practiceCard" hidden aria-labelledby="practice-title"></section>
 
       <div id="itemExtra" class="enc-extra"></div>
 
@@ -165,6 +169,11 @@
       </section>
     </main>
 
+    <main id="moodleView" hidden>
+      <a class="back" href="#" id="moodleBack"><span aria-hidden="true">←</span> <span data-i18n="allItems">Inicialización y evaluación</span></a>
+      <article class="card about moodle" id="moodleBody"></article>
+    </main>
+
     <main id="aboutView" hidden>
       <a class="back" href="#" id="aboutBack"><span aria-hidden="true">←</span> <span data-i18n="allItems">Inicialización y evaluación</span></a>
       <article class="card about" id="aboutBody"></article>
@@ -201,6 +210,9 @@
   <script src="js/items/surrogate.js"></script>
   <script src="js/items/multi.js"></script>
   <script src="js/compare.js"></script>
+  <script src="js/practice-text.js"></script>
+  <script src="js/practice.js"></script>
+  <script src="js/moodle.js"></script>
   <script src="js/content/common.js"></script>
   <script src="js/content/uniform.js"></script>
   <script src="js/content/seeded.js"></script>
@@ -223,6 +235,8 @@
   <script src="js/ui/eval-items.js"></script>
   <script src="js/ui/eval-advanced.js"></script>
   <script src="js/ui/compare-page.js"></script>
+  <script src="js/practice-ui.js"></script>
+  <script src="js/moodle-page.js"></script>
   <script src="js/learn.js"></script>
   <script src="js/about.js"></script>
   <script src="js/home.js"></script>

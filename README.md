@@ -39,7 +39,7 @@ It completes the series formed by [Representation](https://github.com/josemagala
 
 ## Status
 
-In development, with both families complete: every **Initialisation** strategy and every **Evaluation** aspect. The practice exercises and the Moodle question banks are still to come.
+In development, with both families complete (every **Initialisation** strategy and every **Evaluation** aspect), practice mode on every page and Moodle question banks. The final accessibility and language review before the beta release is still to come.
 
 Initialisation:
 
@@ -64,6 +64,11 @@ Evaluation:
 
 Each page has a Learn more panel with pseudocode synchronised with the animation and downloadable Python and JavaScript code.
 
+Practice and Moodle:
+
+- **Practice mode** on all thirteen pages, with sixteen exercise types that have a single answer and are marked box by box: generating individuals from given random numbers, measuring diversity, applying the greedy heuristic, the expected copies of the seed, Halton, Sobol and Latin hypercube points, accepting or rejecting candidates in sequential inhibition, building feasible individuals, the chain from genotype to fitness, ranking, cost-to-fitness transformations and roulette-wheel probabilities, penalised fitness and λ*, counting evaluations with a cache, one-gene neighbours and local optima, averaging noisy evaluations, surrogate estimates, and Pareto fronts with the weighted sum. Each exercise uses the page’s instance, population and settings, and “Show the solution” jumps to the matching step.
+- **Moodle question banks** (Moodle XML, embedded answers/Cloze) in three difficulty levels, generated from the same exercises: one category per page, exercise type, encoding and level, partial credit per box, and general feedback with the solution and links to the step-by-step solution and to the exercise in the tool.
+
 ## Running locally
 
 Open `index.html` in any modern browser. No server or internet connection is needed: D3 v7 is bundled in `vendor/`.
@@ -76,7 +81,7 @@ Requires Node.js 22 or later; Python 3 is optional (it is used to test the downl
 npm test
 ```
 
-The tests check the shared problem layer against representation-ga, that every gene can be recomputed by hand from the random number shown, that the initialisation is uniform (bit, integer and real frequencies; the 120 permutations of five cities with a χ² test), the greedy heuristics on worked examples, the expected takeover against a simulation, the diversity measures against an independent computation, the net properties of the Halton and Sobol points (one point in every elementary box), one individual per stratum in every Latin hypercube, that sequential inhibition accepts a candidate if and only if it is at least δ from every accepted individual, that feasible initialisation always gives full knapsacks and one 1 per row, the comparison means against a replica-by-replica computation, the fitness of the six encodings against an independent computation and worked examples, that the four cost-to-fitness transformations keep the order and give valid roulette-wheel probabilities, that above the critical weight λ* the best individual is feasible and just below it is not, the evaluation counts with and without a cache against an independent recount, that local search improves at every step and ends in a local optimum, the number of local optima against an independent enumeration, the normal noise (mean and standard deviation), the meta-model estimates against their formulas, that every individual of a front is dominated by one of the previous front, the true Pareto front against an independent enumeration, that every step has narration and highlights pseudocode lines that exist, and that the downloadable Python and JavaScript code gives exactly the same results as the tool.
+The tests check the shared problem layer against representation-ga, that every gene can be recomputed by hand from the random number shown, that the initialisation is uniform (bit, integer and real frequencies; the 120 permutations of five cities with a χ² test), the greedy heuristics on worked examples, the expected takeover against a simulation, the diversity measures against an independent computation, the net properties of the Halton and Sobol points (one point in every elementary box), one individual per stratum in every Latin hypercube, that sequential inhibition accepts a candidate if and only if it is at least δ from every accepted individual, that feasible initialisation always gives full knapsacks and one 1 per row, the comparison means against a replica-by-replica computation, the fitness of the six encodings against an independent computation and worked examples, that the four cost-to-fitness transformations keep the order and give valid roulette-wheel probabilities, that above the critical weight λ* the best individual is feasible and just below it is not, the evaluation counts with and without a cache against an independent recount, that local search improves at every step and ends in a local optimum, the number of local optima against an independent enumeration, the normal noise (mean and standard deviation), the meta-model estimates against their formulas, that every individual of a front is dominated by one of the previous front, the true Pareto front against an independent enumeration, that every step has narration and highlights pseudocode lines that exist, that the downloadable Python and JavaScript code gives exactly the same results as the tool, that every practice answer can be recomputed independently from the data the exercise gives, that marking follows the announced tolerances, and that every Moodle box holds the exercise’s answer and every link reproduces the exercise.
 
 ## Project structure
 

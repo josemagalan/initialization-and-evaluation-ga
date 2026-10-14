@@ -6,7 +6,7 @@
 
   // Nombre del repositorio pendiente de confirmar (ver 02-DOCS/wiki/ftd/initialization-and-evaluation-ga.md)
   const REPO = 'https://github.com/josemagalan/initialization-and-evaluation-ga';
-  const VERSION = '0.4';       // en desarrollo (fases 0–4); la beta llega en la fase 6
+  const VERSION = '0.5';       // en desarrollo (fases 0–5); la beta llega en la fase 6
   const SISTERS = {
     representation: 'https://josemagalan.github.io/representation-ga/',
     selection: 'https://josemagalan.github.io/selection-ga/',
@@ -42,7 +42,7 @@
       authorsTitle: 'Autores',
       group: 'Todos los autores forman parte del grupo de investigación Los Goonies (Group of Organization and Industrial Engineering and Simulation).',
       statusTitle: 'Versión',
-      status: 'Versión {v}, en desarrollo. Ya están todas las estrategias de inicialización y todos los aspectos de la evaluación; faltan los ejercicios de práctica y los bancos de preguntas para Moodle. Si encuentras un error o tienes una sugerencia, cuéntanoslo en',
+      status: 'Versión {v}, en desarrollo. Ya están todas las estrategias de inicialización, todos los aspectos de la evaluación, los ejercicios de práctica y los bancos de preguntas para Moodle; falta la revisión final antes de la versión beta. Si encuentras un error o tienes una sugerencia, cuéntanoslo en',
       issues: 'GitHub',
       footBeta: 'versión {v} en desarrollo',
       citeTitle: 'Cómo citar',
@@ -67,7 +67,7 @@
       authorsTitle: 'Authors',
       group: 'All authors are members of the Los Goonies research group (Group of Organization and Industrial Engineering and Simulation).',
       statusTitle: 'Version',
-      status: 'Version {v}, in development. Every initialisation strategy and every evaluation aspect is now available; the practice exercises and the Moodle question banks are still to come. If you find a mistake or have a suggestion, please tell us on',
+      status: 'Version {v}, in development. Every initialisation strategy and evaluation aspect, the practice exercises and the Moodle question banks are now available; the final review before the beta release is still to come. If you find a mistake or have a suggestion, please tell us on',
       issues: 'GitHub',
       footBeta: 'version {v} in development',
       citeTitle: 'How to cite',
@@ -176,9 +176,7 @@
     );
   }
 
-  const MOODLE = false;   // los bancos de preguntas llegan en la fase 5
-
-  function sisterUrl(lang, which) { return `${SISTERS[which] || SISTERS.selection}#lang=${lang}`; }
+    function sisterUrl(lang, which) { return `${SISTERS[which] || SISTERS.selection}#lang=${lang}`; }
 
   function renderFooter(container, lang) {
     const T = text[lang] || text.es;
@@ -192,7 +190,7 @@
     const moodle = node('a', null, T.footMoodle);
     moodle.href = `#page=moodle&lang=${lang}`;
     links.append(about);
-    if (MOODLE) links.append(document.createTextNode(' · '), moodle);
+    links.append(document.createTextNode(' · '), moodle);
     links.append(document.createTextNode(` · ${T.footSister} `));
     SISTER_ORDER.forEach((k, i) => {
       if (i) links.append(document.createTextNode(', '));

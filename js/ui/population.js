@@ -320,8 +320,24 @@
         return base;
       };
 
+      /** Estado de la página para la práctica (js/practice.js): el mismo que guarda la URL. */
+      function getPage() {
+        const x = {};
+        if (spec.hashExtra) spec.hashExtra(state).forEach(([k, v]) => { x[k] = v; });
+        return { enc: state.enc, p: S.params(state.enc, state.p), N: state.N, s: state.s, ps: state.ps, x };
+      }
+      function setPage(pg) {
+        const q = new URLSearchParams([['enc', pg.enc]]);
+        Object.entries(pg.p || {}).forEach(([k, v]) => q.set(k, String(v)));
+        q.set('N', String(pg.N));
+        q.set('s', String(pg.s));
+        q.set('ps', String(pg.ps));
+        Object.entries(pg.x || {}).forEach(([k, v]) => q.set(k, String(v)));
+        init(q);
+      }
+
       return {
-        init, run, hash, narrate, onLanguage, renderExtra,
+        init, run, hash, narrate, onLanguage, renderExtra, getPage, setPage,
         model: () => state.model,
         variant: () => (spec.variant ? spec.variant(state) : state.model ? state.model.shape.kind : 'bits'),
         legend: legendFor,

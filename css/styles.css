@@ -1589,3 +1589,13 @@ a.btn { display: inline-flex; align-items: center; justify-content: center; text
 .sw-sup { border-radius: 50%; background: transparent; border: 3px solid var(--wide); }
 .sw-unsup { border-radius: 50%; background: transparent; border: 3px dashed var(--conflict); }
 .sw-truefront { width: 26px; height: 3px; border-radius: 0; background: repeating-linear-gradient(90deg, var(--muted) 0 2px, transparent 2px 5px); }
+
+/* ---------- Practicar: tablas de datos (fase 5) ---------- */
+.cmp-table.pr-data { width: auto; font-size: 0.88rem; margin: 2px 0 6px; }
+.cmp-table.pr-data th, .cmp-table.pr-data td { padding: 4px 10px; white-space: nowrap; min-width: 0; }
+.cmp-table.pr-data thead th { text-transform: none; letter-spacing: 0; font-size: 0.82rem; text-align: right; }
+.cmp-table.pr-data tbody th { min-width: 0; }
+.cmp-table.pr-data td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.cmp-table.pr-data td.mono { font-family: var(--mono, ui-monospace, monospace); letter-spacing: 0.03em; }
+.pr-type-one { margin: 0; font-weight: 600; font-size: 0.9rem; color: var(--muted); }
+.practice .pr-num { width: 84px; }
