@@ -1,0 +1,16 @@
+{
+  "name": "initialization-and-evaluation-ga",
+  "version": "0.1.0-dev",
+  "private": true,
+  "description": "Interactive teaching tool (D3.js) that shows, step by step, how the population of a genetic algorithm is initialised and evaluated",
+  "scripts": {
+    "test": "node --test tests/*.test.js"
+  },
+  "license": "(MIT AND CC-BY-4.0)",
+  "author": "José Manuel Galán, Silvia Díaz-de la Fuente, Virginia Ahedo, María Pereda, José Ignacio Santos",
+  "homepage": "https://josemagalan.github.io/initialization-and-evaluation-ga/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/josemagalan/initialization-and-evaluation-ga.git"
+  }
+}
