@@ -7,7 +7,7 @@
 
   const dict = {
     es: {
-      portalHome: 'Herramientas de algoritmos genéticos',
+      portalHome: 'Laboratorio de algoritmos genéticos',
       brand: 'Inicialización y evaluación en algoritmos genéticos',
       homeTitleDoc: 'Inicialización y evaluación · Algoritmos genéticos',
       itemTitleDoc: '{name} · Algoritmos genéticos',
@@ -224,7 +224,7 @@
       lgFront1: 'Primer frente', lgOtherFront: 'Otros frentes', lgIso: 'Misma suma ponderada', lgConeBetter: 'Lo dominan', lgConeWorse: 'Domina', lgSupported: 'Soportado', lgUnsupported: 'No soportado', lgTrueFront: 'Frente verdadero',
     },
     en: {
-      portalHome: 'Genetic algorithm tools',
+      portalHome: 'Genetic Algorithms Lab',
       brand: 'Initialisation and evaluation in genetic algorithms',
       homeTitleDoc: 'Initialisation and evaluation · Genetic algorithms',
       itemTitleDoc: '{name} · Genetic algorithms',
