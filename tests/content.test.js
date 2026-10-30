@@ -172,7 +172,7 @@ test('siembra (JavaScript y Python): mismas heurísticas y copias esperadas que 
       assert.deepEqual(code.nearestNeighbour(ts.coords), Sd.greedy('tsp-perm', ts).x);
       cases.push({ ks, as, ts, out: [Sd.greedy('knapsack-bits', ks).x, Sd.greedy('assignment-int', as).x, Sd.greedy('tsp-perm', ts).x] });
     }
-    assert.deepEqual(code.expectedCopies(2, 12, 8), Sd.takeover(2, 12, 8).map((c) => c.k));
+    assert.deepEqual(code.deterministicCopies(2, 12, 8), Sd.takeover(2, 12, 8).map((c) => c.k));
     if (!hasPython()) continue;
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ieg-'));
     fs.writeFileSync(path.join(dir, 'seeded_population.py'), content('seeded').getCode('python', l));
@@ -185,7 +185,7 @@ out = []
 for c in json.load(open(${JSON.stringify(path.join(dir, 'cases.json'))})):
     k = c["ks"]
     out.append([greedy_knapsack(k["weights"], k["values"], k["capacity"]), greedy_assignment(c["as"]["p"]), nearest_neighbour(c["ts"]["coords"])])
-print(json.dumps([out, expected_copies(2, 12, 8)]))
+print(json.dumps([out, deterministic_copies(2, 12, 8)]))
 `;
     const [res, take] = JSON.parse(execFileSync('python3', ['-c', script], { encoding: 'utf8' }));
     res.forEach((r, i) => assert.deepEqual(r, cases[i].out, `${l}: caso ${i}`));

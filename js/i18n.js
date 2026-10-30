@@ -8,6 +8,7 @@
   const dict = {
     es: {
       portalHome: 'Laboratorio de algoritmos genéticos',
+      bookChapter: 'Libro · capítulo 4',
       brand: 'Inicialización y evaluación en algoritmos genéticos',
       homeTitleDoc: 'Inicialización y evaluación · Algoritmos genéticos',
       itemTitleDoc: '{name} · Algoritmos genéticos',
@@ -81,7 +82,7 @@
       pvDistTitle_edges: 'Distancias (proporción de tramos distintos)',
       pvDistTitle_euclid: 'Distancias (euclídea / diagonal de la caja)',
       pvDistScale: 'Más oscuro, más distintos; 0 = iguales',
-      pvTakeoverTitle: 'Copias de la mejor solución (torneo binario, sin variación)',
+      pvTakeoverTitle: 'Aproximación determinista de copias (torneo binario, sin variación)',
       pvTakeoverAll: 'toda la población (N = {N})',
       pvGeneration: 'generación',
       // Medidas
@@ -225,6 +226,7 @@
     },
     en: {
       portalHome: 'Genetic Algorithms Lab',
+      bookChapter: 'Book · chapter 4 (Spanish)',
       brand: 'Initialisation and evaluation in genetic algorithms',
       homeTitleDoc: 'Initialisation and evaluation · Genetic algorithms',
       itemTitleDoc: '{name} · Genetic algorithms',
@@ -298,7 +300,7 @@
       pvDistTitle_edges: 'Distances (share of differing legs)',
       pvDistTitle_euclid: 'Distances (Euclidean / box diagonal)',
       pvDistScale: 'The darker, the more different; 0 = identical',
-      pvTakeoverTitle: 'Copies of the best solution (binary tournament, no variation)',
+      pvTakeoverTitle: 'Deterministic approximation of copies (binary tournament, no variation)',
       pvTakeoverAll: 'whole population (N = {N})',
       pvGeneration: 'generation',
       // Measures

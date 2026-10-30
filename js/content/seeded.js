@@ -8,23 +8,23 @@
   const C = isNode ? require('./common.js') : root.GAX.contentCommon;
 
   const explanation = {
-    es: [
-      'Parece una buena idea: si ya tenemos una solución razonable, obtenida con una heurística o con otra metaheurística, ¿por qué no meterla en la población inicial? En recocido simulado o búsqueda tabú, partir de una solución previa es habitual. En un algoritmo genético, en cambio, el curso lo desaconseja: lo mejor es empezar con una población aleatoria y lo más diversa posible.',
-      'El motivo es la diversidad. Si toda la población parte de la misma solución, o de soluciones de una misma heurística, el acervo genético inicial es pobre y el cruce no tiene qué combinar. Y si se mezcla una solución muy buena con otras aleatorias, muy malas en comparación, la selección le da casi todos los turnos para reproducirse: en pocas generaciones sus copias invaden la población y la diversidad se pierde demasiado deprisa. Es la convergencia prematura: el algoritmo se queda cerca de la solución de partida, que no tiene por qué ser el óptimo (Talbi, 2009, §3.1.1).',
-      'La herramienta construye la solución con una heurística voraz sencilla para cada problema: en la mochila, los objetos por relación valor/peso decreciente, cada uno si cabe; en la asignación, cada tarea a la máquina en la que terminaría antes; en el viajante, el vecino más cercano desde la ciudad 1. Después forma la población con N − K individuos aleatorios uniformes y K copias de esa solución, y la compara con la población uniforme de N individuos generada con la misma semilla.',
-      'Para ver la invasión sin que intervengan el cruce ni la mutación, se calcula cuántas copias tendría la mejor solución tras cada generación de selección por torneo binario con reemplazo: si hay k copias entre N, un torneo la elige salvo que los dos contendientes sean otros, así que el número esperado de copias pasa a ser N (1 − (1 − k/N)²). Con N = 10 y una sola copia, en unas seis generaciones la población entera es la misma solución. Es el tiempo de toma de control (takeover time) de Goldberg y Deb (1991), que se estudia en la herramienta de selección.',
-      'A cualquier mejor individuo le pasaría lo mismo con selección sola. La diferencia es qué invade la población: con una semilla heurística, una solución elegida de antemano, normalmente muy superior al resto, que gana todos los torneos desde la primera generación y que con selección proporcional a la aptitud se reproduciría aún más deprisa. En una población aleatoria los mejores individuos se parecen poco entre sí y son solo algo mejores que los demás, y el cruce y la mutación tienen tiempo de mezclarlos antes de que uno domine.',
-      'Sembrar no está prohibido: hay algoritmos que lo hacen con cuidado, con pocas soluciones heurísticas variadas y operadores que mantienen la diversidad (Eiben y Smith, 2015). Pero tiene que ser una decisión consciente, y en un primer diseño la recomendación es la población aleatoria uniforme.',
+    "es": [
+        "Sembrar la población es incluir soluciones conocidas, por ejemplo obtenidas con una heurística. Puede dar un buen punto de partida, pero hay que conservar variedad: muchas copias de una misma solución dejan al cruce poca información distinta que combinar (Talbi, 2009, §3.1.1; Eiben y Smith, 2015).",
+        "La herramienta construye una solución voraz: en la mochila, prueba los objetos por relación valor/peso; en la asignación, lleva cada tarea a la máquina en la que terminaría antes; en el viajante, elige el vecino más cercano desde la ciudad 1. La población contiene N − K individuos aleatorios uniformes y K copias de esa solución. Se compara con una población uniforme de N individuos generada con la misma semilla.",
+        "La curva supone que la semilla es el único mejor individuo y que solo actúa la selección por torneo binario con reemplazo, sin cruce, mutación ni élite. Si hay K copias entre N, un torneo no elige ninguna solo cuando ambos contendientes son otros. La esperanza de copias en la generación siguiente, dado ese K, es N (1 − (1 − K/N)²).",
+        "Para dibujar varias generaciones se itera esa fórmula sobre el resultado anterior. Es una aproximación determinista, no la media exacta de muchas poblaciones finitas. Con N = 10 y K = 1 estima 1,9; 3,4; 5,7; 8,1; 9,7 y 10,0 copias. Una ejecución real también puede perder la semilla: ya en la primera generación ocurre con probabilidad 0,81^10, aproximadamente el 12,2 %. Acercarse a N en la curva no garantiza la fijación.",
+        "En un torneo determinista importan el orden de aptitud y el número de copias, no cuánto supera el mejor al resto. Para el mismo rango y número de copias, aumentar esa ventaja no cambia la probabilidad de selección. Esta aproximación muestra la concentración causada por la selección sola; no demuestra que sembrar perjudique siempre a un algoritmo genético completo.",
+        "Sembrar puede ser útil con pocas soluciones heurísticas variadas y operadores que mantengan la diversidad. Hay que comprobar su efecto con el algoritmo completo y varias ejecuciones. Para un primer diseño, una población aleatoria uniforme es un punto de partida sencillo (Eiben y Smith, 2015)."
     ],
-    en: [
-      'It looks like a good idea: if we already have a reasonable solution, obtained with a heuristic or another metaheuristic, why not put it into the initial population? In simulated annealing or tabu search, starting from an earlier solution is common. In a genetic algorithm, however, the course advises against it: the best option is to start from a random population that is as diverse as possible.',
-      'The reason is diversity. If the whole population starts from the same solution, or from solutions produced by the same heuristic, the initial gene pool is poor and crossover has nothing to combine. And if a very good solution is mixed with random ones, which are very poor by comparison, selection gives it almost every chance to reproduce: within a few generations its copies invade the population and diversity is lost far too quickly. This is premature convergence: the algorithm stays close to the starting solution, which need not be the optimum (Talbi, 2009, §3.1.1).',
-      'The tool builds the solution with a simple greedy heuristic for each problem: for the knapsack, items in decreasing value/weight order, each one if it fits; for the assignment, each task to the machine on which it would finish first; for the travelling salesman, the nearest neighbour from city 1. It then forms the population with N − K uniform random individuals and K copies of that solution, and compares it with the uniform population of N individuals generated with the same seed.',
-      'To see the invasion without crossover or mutation getting in the way, the tool computes how many copies the best solution would have after each generation of binary tournament selection with replacement: if there are k copies among N, a tournament picks it unless both contestants are other individuals, so the expected number of copies becomes N (1 − (1 − k/N)²). With N = 10 and a single copy, in about six generations the whole population is the same solution. This is Goldberg and Deb’s (1991) takeover time, which is studied in the selection tool.',
-      'With selection alone, the same would happen to any best individual. The difference is what invades the population: with a heuristic seed, a solution chosen in advance, usually far better than the rest, which wins every tournament from the first generation and would reproduce even faster under fitness-proportional selection. In a random population the best individuals bear little resemblance to one another and are only somewhat better than the others, and crossover and mutation have time to mix them before one of them dominates.',
-      'Seeding is not forbidden: some algorithms do it carefully, with a few varied heuristic solutions and operators that maintain diversity (Eiben and Smith, 2015). But it has to be a conscious decision, and in a first design the recommendation is a uniform random population.',
-    ],
-  };
+    "en": [
+        "Seeding a population means including known solutions, for example solutions obtained with a heuristic. It can provide a good starting point, but diversity must be preserved: many copies of one solution leave crossover with little distinct information to combine (Talbi, 2009, §3.1.1; Eiben and Smith, 2015).",
+        "The tool builds a greedy solution: for knapsack, it tries items in value/weight order; for assignment, each task goes to the machine on which it would finish first; for travelling salesman, it uses the nearest neighbour from city 1. The population contains N − K uniform random individuals and K copies of that solution. It is compared with a uniform population of N individuals generated with the same seed.",
+        "The curve assumes that the seed is the single best individual and that only binary tournament selection with replacement acts, with no crossover, mutation or elitism. With K copies among N, a tournament misses the seed only when both contestants are other individuals. The expected number of copies in the next generation, conditional on K, is N (1 − (1 − K/N)²).",
+        "To draw several generations, the formula is iterated on the previous result. This is a deterministic approximation, not the exact mean of many finite populations. With N = 10 and K = 1 it estimates 1.9, 3.4, 5.7, 8.1, 9.7 and 10.0 copies. A real run can also lose the seed: this happens in the first generation with probability 0.81^10, about 12.2%. Approaching N in the curve does not guarantee fixation.",
+        "In a deterministic tournament, fitness rank and the number of copies matter, not how far ahead the best individual is. With the same rank and number of copies, increasing that advantage does not change selection probability. This approximation shows concentration under selection alone; it does not prove that seeding always harms a complete genetic algorithm.",
+        "Seeding can help when a few varied heuristic solutions are combined with operators that preserve diversity. Its effect must be checked with the complete algorithm and several runs. For a first design, a uniform random population is a simple starting point (Eiben and Smith, 2015)."
+    ]
+};
 
   const stages = {
     es: ['Heurística', 'Población', 'Diversidad', 'Selección', 'Conclusión'],
@@ -39,13 +39,13 @@
       copies_one: 'Se coloca una copia en la población, en la última fila.',
       copies_many: 'Se colocan {K} copias en la población, en las últimas filas.',
       random: 'El resto de la población, {R} individuos, se genera al azar de forma uniforme: son los mismos que daría la estrategia aleatoria uniforme con esta semilla.',
-      mix_best: 'Población sembrada: {R} individuos aleatorios y {K} copias de la solución heurística, que es con diferencia la mejor: ningún individuo aleatorio llega a su nivel.',
+      mix_best: "Población sembrada: {R} individuos aleatorios y {K} copias de la solución heurística. Ningún individuo aleatorio es tan bueno como ella.",
       mix_notbest: 'Población sembrada: {R} individuos aleatorios y {K} copias de la solución heurística. Esta vez {nw} de los aleatorios son tan buenos como ella o mejores: en ejemplos tan pequeños pasa a veces.',
       div_one: 'Diversidad: con una sola copia apenas cambia (distancia media {du} en la población uniforme y {ds} en la sembrada). El problema llega al seleccionar.',
-      div_many: 'Diversidad: la distancia media baja de {du} en la población uniforme a {ds} en la sembrada, y los individuos distintos, de {nu} a {ns}. Las copias están a distancia 0 entre sí (celdas con borde).',
-      gen: 'Generación {g}: con selección por torneo binario, sin cruce ni mutación, la solución heurística tendría unas {k} copias de {N} (valor esperado).',
-      end: 'En unas {gt} generaciones, casi toda la población serían copias de la solución heurística: la diversidad que necesitan el cruce y la mutación desaparece antes de que puedan actuar. Si la heurística no da el óptimo, el algoritmo queda atrapado cerca de ella. Por eso se recomienda empezar con una población aleatoria y diversa.',
-      end_opt: 'En unas {gt} generaciones, casi toda la población serían copias de la solución heurística. Aquí la heurística ya da el óptimo, porque el ejemplo es pequeño; en problemas reales rara vez ocurre, y el algoritmo quedaría atrapado cerca de una solución peor. Por eso se recomienda empezar con una población aleatoria y diversa.',
+      div_many: "Diversidad: la distancia media pasa de {du} en la población uniforme a {ds} en la sembrada, y los individuos distintos, de {nu} a {ns}. Las copias están a distancia 0 entre sí (celdas con borde).",
+      gen: "Generación {g}: la aproximación determinista estima {k} copias de {N}, con torneo binario, sin cruce, mutación ni élite.",
+      end: "En la aproximación determinista, en unas {gt} generaciones casi toda la población son copias de la semilla. Una ejecución real puede perderla por azar. Este modelo de selección sola no demuestra que sembrar perjudique siempre al algoritmo completo.",
+      end_opt: "La aproximación determinista concentra la población en unas {gt} generaciones. Aquí la heurística ya da el óptimo. En una ejecución real puede perderse por azar; para valorar la siembra hay que probar el algoritmo completo.",
     },
     en: {
       heur_knapsack: 'Greedy heuristic: the items are sorted by value/weight ratio from highest to lowest ({order}) and each one goes in if it fits. Result: {chrom}, worth {v}; the optimum is {opt}. {copies}',
@@ -54,13 +54,13 @@
       copies_one: 'One copy is placed in the population, in the last row.',
       copies_many: '{K} copies are placed in the population, in the last rows.',
       random: 'The rest of the population, {R} individuals, is generated uniformly at random: they are the same ones the uniform random strategy would give with this seed.',
-      mix_best: 'Seeded population: {R} random individuals and {K} copies of the heuristic solution, which is by far the best: no random individual matches it.',
+      mix_best: "Seeded population: {R} random individuals and {K} copies of the heuristic solution. No random individual is as good as the seed.",
       mix_notbest: 'Seeded population: {R} random individuals and {K} copies of the heuristic solution. This time {nw} of the random ones are at least as good: this sometimes happens in such small examples.',
       div_one: 'Diversity: with a single copy it hardly changes (mean distance {du} in the uniform population and {ds} in the seeded one). The problem comes with selection.',
-      div_many: 'Diversity: the mean distance drops from {du} in the uniform population to {ds} in the seeded one, and the number of distinct individuals from {nu} to {ns}. The copies are at distance 0 from one another (outlined cells).',
-      gen: 'Generation {g}: with binary tournament selection, no crossover and no mutation, the heuristic solution would have about {k} copies out of {N} (expected value).',
-      end: 'In about {gt} generations, almost the whole population would be copies of the heuristic solution: the diversity that crossover and mutation need disappears before they can act. If the heuristic does not give the optimum, the algorithm gets stuck near it. That is why starting from a random, diverse population is recommended.',
-      end_opt: 'In about {gt} generations, almost the whole population would be copies of the heuristic solution. Here the heuristic already gives the optimum, because the example is small; in real problems that rarely happens, and the algorithm would get stuck near a worse solution. That is why starting from a random, diverse population is recommended.',
+      div_many: "Diversity: the mean distance changes from {du} in the uniform population to {ds} in the seeded one, and distinct individuals from {nu} to {ns}. The copies are at distance 0 from one another (outlined cells).",
+      gen: "Generation {g}: the deterministic approximation estimates {k} copies out of {N}, with binary tournament selection and no crossover, mutation or elitism.",
+      end: "In the deterministic approximation, after about {gt} generations almost the whole population consists of seed copies. A real run can lose the seed by chance. This selection-only model does not prove that seeding always harms the complete algorithm.",
+      end_opt: "The deterministic approximation concentrates the population in about {gt} generations. Here the heuristic already gives the optimum. A real run can lose it by chance; seeding must be assessed using the complete algorithm.",
     },
   };
 
@@ -207,7 +207,7 @@ def seeded_population(random_individuals, heuristic_solution, k):
     return [list(x) for x in random_individuals] + [list(heuristic_solution) for _ in range(k)]
 
 
-def expected_copies(k, n, generations):
+def deterministic_copies(k, n, generations):
     """{{docTake}}"""
     out = [k]
     for _ in range(generations):
@@ -220,7 +220,7 @@ if __name__ == "__main__":
     # {{example}}
     print(greedy_knapsack([3, 4, 5, 2], [4, 5, 7, 1], 7))      # [0, 0, 1, 1]
     print(greedy_assignment([[2, 5], [4, 1], [3, 3]]))       # [1, 2, 2]
-    print([round(k, 2) for k in expected_copies(1, 10, 6)])  # [1, 1.9, 3.44, 5.7, 8.15, 9.66, 9.99]
+    print([round(k, 2) for k in deterministic_copies(1, 10, 6)])  # [1, 1.9, 3.44, 5.7, 8.15, 9.66, 9.99]
 `,
     },
     javascript: {
@@ -276,7 +276,7 @@ function seededPopulation(randomIndividuals, heuristicSolution, k) {
 }
 
 /** {{docTake}} */
-function expectedCopies(k, n, generations) {
+function deterministicCopies(k, n, generations) {
   const out = [k];
   for (let g = 0; g < generations; g++) {
     k = n * (1 - (1 - k / n) ** 2);
@@ -286,12 +286,12 @@ function expectedCopies(k, n, generations) {
 }
 
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { greedyKnapsack, greedyAssignment, nearestNeighbour, seededPopulation, expectedCopies };
+  module.exports = { greedyKnapsack, greedyAssignment, nearestNeighbour, seededPopulation, deterministicCopies };
   if (require.main === module) {
     // {{example}}
     console.log(greedyKnapsack([3, 4, 5, 2], [4, 5, 7, 1], 7));   // [ 0, 0, 1, 1 ]
     console.log(greedyAssignment([[2, 5], [4, 1], [3, 3]]));     // [ 1, 2, 2 ]
-    console.log(expectedCopies(1, 10, 6).map((k) => Math.round(k * 100) / 100));   // [ 1, 1.9, 3.44, 5.7, 8.15, 9.66, 9.99 ]
+    console.log(deterministicCopies(1, 10, 6).map((k) => Math.round(k * 100) / 100));   // [ 1, 1.9, 3.44, 5.7, 8.15, 9.66, 9.99 ]
   }
 }
 `,
@@ -300,25 +300,25 @@ if (typeof module !== 'undefined' && module.exports) {
 
   const codeComments = {
     es: {
-      title: 'Contraejemplo: población inicial sembrada con una solución voraz y copias esperadas tras la selección.',
+      title: 'Contraejemplo: población inicial sembrada con una solución voraz y aproximación determinista de las copias tras la selección.',
       ref: 'Referencias: Talbi, E.-G. (2009), §3.1.1; Goldberg, D. E., y Deb, K. (1991); Bautista-Valhondo, J. (2020).',
       docKnap: 'Mochila: objetos por relación valor/peso decreciente (a igualdad, el de menor índice); cada uno entra si cabe.',
       docAssign: 'Asignación: cada tarea, en orden, a la máquina en la que terminaría antes (a igualdad, la de menor índice). p[i][j] es el tiempo de la tarea i en la máquina j.',
       docNN: 'Viajante: vecino más cercano desde la ciudad 1 (a igualdad, la ciudad de menor número). coords[c - 1] son las coordenadas de la ciudad c.',
       tenths: 'distancia euclídea en décimas enteras, como en la herramienta',
       docSeed: 'Población sembrada: los individuos aleatorios y k copias de la solución heurística, al final.',
-      docTake: 'Copias esperadas de la mejor solución tras cada generación de torneo binario con reemplazo, sin cruce ni mutación.',
+      docTake: 'Aproximación determinista: itera la esperanza de un paso; no es la media exacta de réplicas. Torneo binario, sin cruce, mutación ni élite.',
       example: 'Ejemplo pequeño, para comprobarlo a mano',
     },
     en: {
-      title: 'Counterexample: initial population seeded with a greedy solution and expected copies after selection.',
+      title: 'Counterexample: initial population seeded with a greedy solution and a deterministic approximation of copies after selection.',
       ref: 'References: Talbi, E.-G. (2009), §3.1.1; Goldberg, D. E., & Deb, K. (1991); Bautista-Valhondo, J. (2020).',
       docKnap: 'Knapsack: items in decreasing value/weight order (ties: lowest index); each one goes in if it fits.',
       docAssign: 'Assignment: each task, in order, to the machine on which it would finish first (ties: lowest index). p[i][j] is the time of task i on machine j.',
       docNN: 'Travelling salesman: nearest neighbour from city 1 (ties: lowest-numbered city). coords[c - 1] holds the coordinates of city c.',
       tenths: 'Euclidean distance in whole tenths, as in the tool',
       docSeed: 'Seeded population: the random individuals and k copies of the heuristic solution, at the end.',
-      docTake: 'Expected copies of the best solution after each generation of binary tournament with replacement, with no crossover or mutation.',
+      docTake: 'Deterministic approximation: iterates a one-step expectation, not the exact mean of replicates. Binary tournament, no crossover, mutation or elitism.',
       example: 'Small example, to check by hand',
     },
   };

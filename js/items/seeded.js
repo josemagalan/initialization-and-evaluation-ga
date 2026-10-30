@@ -3,8 +3,8 @@
  *
  * La población sembrada son N − K individuos aleatorios uniformes (los mismos que da js/items/uniform.js con la
  * misma semilla) y K copias de la solución heurística. Se compara con la población uniforme de N individuos y se
- * proyecta cuántas copias de la mejor solución habría tras cada generación de selección por torneo binario sola,
- * sin cruce ni mutación (valor esperado: k' = N · (1 − (1 − k/N)²) si la semilla es el mejor individuo).
+ * aproxima de forma determinista las copias de la mejor solución tras cada generación de torneo binario solo,
+ * sin cruce, mutación ni élite (esperanza de un paso condicionada a k: k' = N · (1 − (1 − k/N)²) si la semilla es el mejor individuo).
  *
  * Heurísticas (desempates por el menor índice):
  *   mochila     objetos por relación valor/peso decreciente; cada uno entra si cabe
@@ -67,7 +67,7 @@
     return { x: tour, order: tour.map((c) => ({ city: c })) };
   }
 
-  /** Copias esperadas del mejor individuo tras g generaciones de torneo binario (con reemplazo), sin variación. */
+  /** Aproximación determinista: itera la esperanza de un paso, no la media exacta de poblaciones finitas. */
   function takeover(K, N, G) {
     const out = [{ g: 0, k: K }];
     let k = K;
